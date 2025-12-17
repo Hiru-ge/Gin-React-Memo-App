@@ -62,31 +62,35 @@
 ```
 
 ## メモ編集
-- URL: /memos
+- URL: /memos/:id
 - Method: PUT
 - Request:
 ``` JSON
-[
-    {
-        "title":"更新後タイトル",
-        "content":"更新後の内容です",
-    }
-]
+{
+    "title":"更新後タイトル",
+    "content":"更新後の内容です"
+}
 ```
 
 - Response: 200 OK (更新後の内容を返す)
 ``` JSON
-[
-    {
-        "id":1,
-        "title":"更新後タイトル",
-        "content":"更新後の内容です",
-        "created_at": "2023-10-27T10:00:00Z" 
-    }
-]
+{
+    "id":1,
+    "title":"更新後タイトル",
+    "content":"更新後の内容です",
+    "created_at": "2023-10-27T10:00:00Z" 
+}
 ```
 
 ## メモ削除
 - URL: /memos/:id
 - Method: DELETE
 - Response: 204 NoContent (ボディ無し)
+
+## Frontend routes (React Router)
+フロントエンドは React Router を使用してルーティングを行います。
+
+- `/` : メモ一覧（`GET /memos` を呼び出す）
+- `/memos/create` : 新規作成フォーム（`POST /memos` を呼び出す）
+- `/memos/:id` : メモ詳細（`GET /memos/:id` を呼び出す）
+- `/memos/:id/edit` : 編集フォーム（`PUT /memos/:id` を呼び出す）

@@ -15,7 +15,8 @@ RESTful API の設計と実装、およびフロントエンドとの非同期�
 - **Library**: React
 - **Language**: TypeScript
 - **Build Tool**: Vite
-- **HTTP Client**: axios (または fetch)
+- **HTTP Client**: axios
+- **Routing**: React Router
 
 ---
 
