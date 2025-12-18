@@ -6,9 +6,9 @@
 ---
 
 ## DB準備
-- [ ] MySQL にデータベース `memo_app` を作成する
+- [x] MySQL にデータベース `memo_app` を作成する
   - 例: `CREATE DATABASE memo_app CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;`
-- [ ] `memos` テーブルを作成する
+- [x] `memos` テーブルを作成する
   - 例:
     ```sql
     CREATE TABLE memos (
@@ -18,7 +18,7 @@
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP
     );
     ```
-- [ ] （任意）サンプルデータを投入する
+- [x] （任意）サンプルデータを投入する
 
 ---
 
