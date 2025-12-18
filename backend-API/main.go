@@ -43,6 +43,19 @@ func getAllMemos() ([]Memo, error) {
 	return memos, nil
 }
 
+func getMemoByID(id string) (Memo, error) {
+	var memo Memo
+
+	row := db.QueryRow("SELECT * FROM memos WHERE id = ?", id)
+	if err := row.Scan(&memo.ID, &memo.Title, &memo.Content, &memo.Created_at); err != nil {
+		if err == sql.ErrNoRows {
+			return memo, fmt.Errorf("getAllMemos %d: %v", id, err)
+		}
+		return memo, fmt.Errorf("getAllMemos %d: %v", id, err)
+	}
+	return memo, nil
+}
+
 func getAllMemosHandler(c *gin.Context) {
 	memos, err := getAllMemos()
 	if err != nil {
@@ -51,6 +64,16 @@ func getAllMemosHandler(c *gin.Context) {
 	}
 
 	c.IndentedJSON(200, memos)
+}
+
+func getMemoByIDHandler(c *gin.Context) {
+	id := c.Param("id")
+	memo, err := getMemoByID(id)
+	if err != nil {
+		c.IndentedJSON(500, gin.H{"error": err.Error()})
+		return
+	}
+	c.IndentedJSON(200, memo)
 }
 
 func main() {
@@ -78,6 +101,7 @@ func main() {
 	// ルーティング
 	router := gin.Default()
 	router.GET("/memos", getAllMemosHandler)
+	router.GET("/memos/:id", getMemoByIDHandler)
 
 	router.Run("localhost:8080")
 }
