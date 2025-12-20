@@ -25,7 +25,7 @@ type Memo struct {
 func getAllMemos() ([]Memo, error) {
 	var memos []Memo
 
-	rows, err := db.Query("SELECT * FROM memos")
+	rows, err := db.Query("SELECT id, title, content, created_at FROM memos")
 	if err != nil {
 		return nil, fmt.Errorf("getAllMemos : %v", err)
 	}
@@ -48,7 +48,7 @@ func getAllMemos() ([]Memo, error) {
 func getMemoByID(id int64) (Memo, error) {
 	var memo Memo
 
-	row := db.QueryRow("SELECT * FROM memos WHERE id = ?", id)
+	row := db.QueryRow("SELECT id, title, content, created_at FROM memos WHERE id = ?", id)
 	if err := row.Scan(&memo.ID, &memo.Title, &memo.Content, &memo.Created_at); err != nil {
 		if err == sql.ErrNoRows {
 			return memo, fmt.Errorf("getMemoByID %d: %v", id, err)
