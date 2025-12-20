@@ -127,10 +127,8 @@ func (s *Server) getAllMemosHandler(c *gin.Context) {
 }
 
 func (s *Server) getMemoByIDHandler(c *gin.Context) {
-	idStr := c.Param("id")
-	id, err := strconv.ParseInt(idStr, 10, 64)
-	if err != nil {
-		c.IndentedJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+	id, ok := s.parseID(c)
+	if !ok {
 		return
 	}
 	memo, err := getMemoByID(s.db, id)
@@ -156,10 +154,8 @@ func (s *Server) addMemoHandler(c *gin.Context) {
 }
 
 func (s *Server) editMemoHandler(c *gin.Context) {
-	idStr := c.Param("id")
-	id, err := strconv.ParseInt(idStr, 10, 64)
-	if err != nil {
-		c.IndentedJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+	id, ok := s.parseID(c)
+	if !ok {
 		return
 	}
 	var editedMemo Memo
@@ -168,7 +164,7 @@ func (s *Server) editMemoHandler(c *gin.Context) {
 		return
 	}
 	editedMemo.ID = id
-	editedMemo, err = editMemo(s.db, editedMemo)
+	editedMemo, err := editMemo(s.db, editedMemo)
 	if err != nil {
 		c.IndentedJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -177,18 +173,26 @@ func (s *Server) editMemoHandler(c *gin.Context) {
 }
 
 func (s *Server) deleteMemoHandler(c *gin.Context) {
-	idStr := c.Param("id")
-	id, err := strconv.ParseInt(idStr, 10, 64)
-	if err != nil {
-		c.IndentedJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+	id, ok := s.parseID(c)
+	if !ok {
 		return
 	}
-	err = deleteMemoByID(s.db, id)
+	err := deleteMemoByID(s.db, id)
 	if err != nil {
 		c.IndentedJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 	c.Status(http.StatusNoContent)
+}
+
+func (s *Server) parseID(c *gin.Context) (int64, bool) {
+	idStr := c.Param("id")
+	id, err := strconv.ParseInt(idStr, 10, 64)
+	if err != nil {
+		c.IndentedJSON(http.StatusBadRequest, gin.H{"error": "Invalid ID format"})
+		return 0, false
+	}
+	return id, true
 }
 
 func main() {
