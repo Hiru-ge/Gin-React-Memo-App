@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strconv"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -14,7 +15,7 @@ import (
 var db *sql.DB
 
 type Memo struct {
-	ID         string    `json:"id"`
+	ID         int64     `json:"id"`
 	Title      string    `json:"title"`
 	Content    string    `json:"content"`
 	Created_at time.Time `json:"created_at"`
@@ -43,7 +44,7 @@ func getAllMemos() ([]Memo, error) {
 	return memos, nil
 }
 
-func getMemoByID(id string) (Memo, error) {
+func getMemoByID(id int64) (Memo, error) {
 	var memo Memo
 
 	row := db.QueryRow("SELECT * FROM memos WHERE id = ?", id)
@@ -67,7 +68,12 @@ func getAllMemosHandler(c *gin.Context) {
 }
 
 func getMemoByIDHandler(c *gin.Context) {
-	id := c.Param("id")
+	idStr := c.Param("id")
+	id, err := strconv.ParseInt(idStr, 10, 64)
+	if err != nil {
+		c.IndentedJSON(500, gin.H{"error": err.Error()})
+		return
+	}
 	memo, err := getMemoByID(id)
 	if err != nil {
 		c.IndentedJSON(500, gin.H{"error": err.Error()})
