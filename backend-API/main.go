@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 	"log"
+	"net/http"
 	"os"
 	"strconv"
 	"time"
@@ -57,6 +58,23 @@ func getMemoByID(id int64) (Memo, error) {
 	return memo, nil
 }
 
+func addMemo(memo Memo) (Memo, error) {
+	result, err := db.Exec("INSERT INTO memos (title, content) VALUES (?, ?)", memo.Title, memo.Content)
+	if err != nil {
+		return Memo{}, fmt.Errorf("addMemo: %v", err)
+	}
+
+	id, err := result.LastInsertId()
+	if err != nil {
+		return Memo{}, fmt.Errorf("addMemo: %v", err)
+	}
+	newMemo, err := getMemoByID(id)
+	if err != nil {
+		return Memo{}, fmt.Errorf("addMemo: %v", err)
+	}
+	return newMemo, nil
+}
+
 func getAllMemosHandler(c *gin.Context) {
 	memos, err := getAllMemos()
 	if err != nil {
@@ -80,6 +98,20 @@ func getMemoByIDHandler(c *gin.Context) {
 		return
 	}
 	c.IndentedJSON(200, memo)
+}
+
+func addMemoHandler(c *gin.Context) {
+	var newMemo Memo
+	if err := c.BindJSON(&newMemo); err != nil {
+		c.IndentedJSON(500, gin.H{"error": err.Error()})
+		return
+	}
+	newMemo, err := addMemo(newMemo)
+	if err != nil {
+		c.IndentedJSON(500, gin.H{"error": err.Error()})
+		return
+	}
+	c.IndentedJSON(http.StatusCreated, newMemo)
 }
 
 func main() {
@@ -108,6 +140,7 @@ func main() {
 	router := gin.Default()
 	router.GET("/memos", getAllMemosHandler)
 	router.GET("/memos/:id", getMemoByIDHandler)
+	router.POST("/memos", addMemoHandler)
 
 	router.Run("localhost:8080")
 }
