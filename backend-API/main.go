@@ -98,6 +98,22 @@ func editMemo(memo Memo) (Memo, error) {
 	return editedMemo, nil
 }
 
+func deleteMemoByID(id int64) error {
+	result, err := db.Exec("DELETE FROM memos WHERE id = ?", id)
+	if err != nil {
+		return fmt.Errorf("deleteMemoByID: %v", err)
+	}
+	rows, err := result.RowsAffected()
+	if err != nil {
+		return fmt.Errorf("deleteMemoByID: %v", err)
+	}
+	if rows == 0 {
+		// 削除対象の行が最初から存在しない際にエラーを返す
+		return sql.ErrNoRows
+	}
+	return nil
+}
+
 func getAllMemosHandler(c *gin.Context) {
 	memos, err := getAllMemos()
 	if err != nil {
@@ -158,6 +174,21 @@ func editMemoHandler(c *gin.Context) {
 	c.IndentedJSON(http.StatusOK, editedMemo)
 }
 
+func deleteMemoHandler(c *gin.Context) {
+	idStr := c.Param("id")
+	id, err := strconv.ParseInt(idStr, 10, 64)
+	if err != nil {
+		c.IndentedJSON(500, gin.H{"error": err.Error()})
+		return
+	}
+	err = deleteMemoByID(id)
+	if err != nil {
+		c.IndentedJSON(500, gin.H{"error": err.Error()})
+		return
+	}
+	c.Status(http.StatusNoContent)
+}
+
 func main() {
 	cfg := mysql.NewConfig()
 	cfg.User = os.Getenv("DBUSER")
@@ -186,6 +217,7 @@ func main() {
 	router.GET("/memos/:id", getMemoByIDHandler)
 	router.POST("/memos", addMemoHandler)
 	router.PUT("/memos/:id", editMemoHandler)
+	router.DELETE("/memos/:id", deleteMemoHandler)
 
 	router.Run("localhost:8080")
 }
