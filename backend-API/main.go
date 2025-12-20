@@ -51,9 +51,9 @@ func getMemoByID(id int64) (Memo, error) {
 	row := db.QueryRow("SELECT * FROM memos WHERE id = ?", id)
 	if err := row.Scan(&memo.ID, &memo.Title, &memo.Content, &memo.Created_at); err != nil {
 		if err == sql.ErrNoRows {
-			return memo, fmt.Errorf("getAllMemos %d: %v", id, err)
+			return memo, fmt.Errorf("getMemoByID %d: %v", id, err)
 		}
-		return memo, fmt.Errorf("getAllMemos %d: %v", id, err)
+		return memo, fmt.Errorf("getMemoByID %d: %v", id, err)
 	}
 	return memo, nil
 }
@@ -78,12 +78,12 @@ func addMemo(memo Memo) (Memo, error) {
 func editMemo(memo Memo) (Memo, error) {
 	result, err := db.Exec("UPDATE memos SET title = ?, content = ? WHERE id = ?", memo.Title, memo.Content, memo.ID)
 	if err != nil {
-		return Memo{}, fmt.Errorf("addMemo: %v", err)
+		return Memo{}, fmt.Errorf("editMemo: %v", err)
 	}
 
 	rows, err := result.RowsAffected()
 	if err != nil {
-		return Memo{}, fmt.Errorf("addMemo: %v", err)
+		return Memo{}, fmt.Errorf("editMemo: %v", err)
 	}
 	if rows == 0 {
 		// 変更行が0でも「変更前と同じ値で更新されたケース」があり得るので存在確認し、存在しない場合だけエラーを返す
@@ -93,7 +93,7 @@ func editMemo(memo Memo) (Memo, error) {
 	}
 	editedMemo, err := getMemoByID(memo.ID)
 	if err != nil {
-		return Memo{}, fmt.Errorf("addMemo: %v", err)
+		return Memo{}, fmt.Errorf("editMemo: %v", err)
 	}
 	return editedMemo, nil
 }
