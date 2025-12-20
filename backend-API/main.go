@@ -16,10 +16,10 @@ import (
 var db *sql.DB
 
 type Memo struct {
-	ID         int64     `json:"id"`
-	Title      string    `json:"title"`
-	Content    string    `json:"content"`
-	Created_at time.Time `json:"created_at"`
+	ID        int64     `json:"id"`
+	Title     string    `json:"title"`
+	Content   string    `json:"content"`
+	CreatedAt time.Time `json:"created_at"`
 }
 
 func getAllMemos() ([]Memo, error) {
@@ -33,7 +33,7 @@ func getAllMemos() ([]Memo, error) {
 
 	for rows.Next() {
 		var memo Memo
-		if err := rows.Scan(&memo.ID, &memo.Title, &memo.Content, &memo.Created_at); err != nil {
+		if err := rows.Scan(&memo.ID, &memo.Title, &memo.Content, &memo.CreatedAt); err != nil {
 			return nil, fmt.Errorf("getAllMemos : %v", err)
 		}
 		memos = append(memos, memo)
@@ -49,7 +49,7 @@ func getMemoByID(id int64) (Memo, error) {
 	var memo Memo
 
 	row := db.QueryRow("SELECT id, title, content, created_at FROM memos WHERE id = ?", id)
-	if err := row.Scan(&memo.ID, &memo.Title, &memo.Content, &memo.Created_at); err != nil {
+	if err := row.Scan(&memo.ID, &memo.Title, &memo.Content, &memo.CreatedAt); err != nil {
 		if err == sql.ErrNoRows {
 			return memo, fmt.Errorf("getMemoByID %d: %v", id, err)
 		}
