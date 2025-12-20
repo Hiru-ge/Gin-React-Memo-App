@@ -13,7 +13,9 @@ import (
 	"github.com/go-sql-driver/mysql"
 )
 
-var db *sql.DB
+type Server struct {
+	db *sql.DB
+}
 
 type Memo struct {
 	ID        int64     `json:"id"`
@@ -22,7 +24,7 @@ type Memo struct {
 	CreatedAt time.Time `json:"created_at"`
 }
 
-func getAllMemos() ([]Memo, error) {
+func getAllMemos(db *sql.DB) ([]Memo, error) {
 	var memos []Memo
 
 	rows, err := db.Query("SELECT id, title, content, created_at FROM memos")
@@ -45,7 +47,7 @@ func getAllMemos() ([]Memo, error) {
 	return memos, nil
 }
 
-func getMemoByID(id int64) (Memo, error) {
+func getMemoByID(db *sql.DB, id int64) (Memo, error) {
 	var memo Memo
 
 	row := db.QueryRow("SELECT id, title, content, created_at FROM memos WHERE id = ?", id)
@@ -58,7 +60,7 @@ func getMemoByID(id int64) (Memo, error) {
 	return memo, nil
 }
 
-func addMemo(memo Memo) (Memo, error) {
+func addMemo(db *sql.DB, memo Memo) (Memo, error) {
 	result, err := db.Exec("INSERT INTO memos (title, content) VALUES (?, ?)", memo.Title, memo.Content)
 	if err != nil {
 		return Memo{}, fmt.Errorf("addMemo: %v", err)
@@ -68,14 +70,14 @@ func addMemo(memo Memo) (Memo, error) {
 	if err != nil {
 		return Memo{}, fmt.Errorf("addMemo: %v", err)
 	}
-	newMemo, err := getMemoByID(id)
+	newMemo, err := getMemoByID(db, id)
 	if err != nil {
 		return Memo{}, fmt.Errorf("addMemo: %v", err)
 	}
 	return newMemo, nil
 }
 
-func editMemo(memo Memo) (Memo, error) {
+func editMemo(db *sql.DB, memo Memo) (Memo, error) {
 	result, err := db.Exec("UPDATE memos SET title = ?, content = ? WHERE id = ?", memo.Title, memo.Content, memo.ID)
 	if err != nil {
 		return Memo{}, fmt.Errorf("editMemo: %v", err)
@@ -87,18 +89,18 @@ func editMemo(memo Memo) (Memo, error) {
 	}
 	if rows == 0 {
 		// 変更行が0でも「変更前と同じ値で更新されたケース」があり得るので存在確認し、存在しない場合だけエラーを返す
-		if _, err := getMemoByID(memo.ID); err == sql.ErrNoRows {
+		if _, err := getMemoByID(db, memo.ID); err == sql.ErrNoRows {
 			return Memo{}, sql.ErrNoRows
 		}
 	}
-	editedMemo, err := getMemoByID(memo.ID)
+	editedMemo, err := getMemoByID(db, memo.ID)
 	if err != nil {
 		return Memo{}, fmt.Errorf("editMemo: %v", err)
 	}
 	return editedMemo, nil
 }
 
-func deleteMemoByID(id int64) error {
+func deleteMemoByID(db *sql.DB, id int64) error {
 	result, err := db.Exec("DELETE FROM memos WHERE id = ?", id)
 	if err != nil {
 		return fmt.Errorf("deleteMemoByID: %v", err)
@@ -114,8 +116,8 @@ func deleteMemoByID(id int64) error {
 	return nil
 }
 
-func getAllMemosHandler(c *gin.Context) {
-	memos, err := getAllMemos()
+func (s *Server) getAllMemosHandler(c *gin.Context) {
+	memos, err := getAllMemos(s.db)
 	if err != nil {
 		c.IndentedJSON(500, gin.H{"error": err.Error()})
 		return
@@ -124,14 +126,14 @@ func getAllMemosHandler(c *gin.Context) {
 	c.IndentedJSON(200, memos)
 }
 
-func getMemoByIDHandler(c *gin.Context) {
+func (s *Server) getMemoByIDHandler(c *gin.Context) {
 	idStr := c.Param("id")
 	id, err := strconv.ParseInt(idStr, 10, 64)
 	if err != nil {
 		c.IndentedJSON(500, gin.H{"error": err.Error()})
 		return
 	}
-	memo, err := getMemoByID(id)
+	memo, err := getMemoByID(s.db, id)
 	if err != nil {
 		c.IndentedJSON(500, gin.H{"error": err.Error()})
 		return
@@ -139,13 +141,13 @@ func getMemoByIDHandler(c *gin.Context) {
 	c.IndentedJSON(200, memo)
 }
 
-func addMemoHandler(c *gin.Context) {
+func (s *Server) addMemoHandler(c *gin.Context) {
 	var newMemo Memo
 	if err := c.BindJSON(&newMemo); err != nil {
 		c.IndentedJSON(500, gin.H{"error": err.Error()})
 		return
 	}
-	newMemo, err := addMemo(newMemo)
+	newMemo, err := addMemo(s.db, newMemo)
 	if err != nil {
 		c.IndentedJSON(500, gin.H{"error": err.Error()})
 		return
@@ -153,7 +155,7 @@ func addMemoHandler(c *gin.Context) {
 	c.IndentedJSON(http.StatusCreated, newMemo)
 }
 
-func editMemoHandler(c *gin.Context) {
+func (s *Server) editMemoHandler(c *gin.Context) {
 	idStr := c.Param("id")
 	id, err := strconv.ParseInt(idStr, 10, 64)
 	if err != nil {
@@ -166,7 +168,7 @@ func editMemoHandler(c *gin.Context) {
 		return
 	}
 	editedMemo.ID = id
-	editedMemo, err = editMemo(editedMemo)
+	editedMemo, err = editMemo(s.db, editedMemo)
 	if err != nil {
 		c.IndentedJSON(500, gin.H{"error": err.Error()})
 		return
@@ -174,14 +176,14 @@ func editMemoHandler(c *gin.Context) {
 	c.IndentedJSON(http.StatusOK, editedMemo)
 }
 
-func deleteMemoHandler(c *gin.Context) {
+func (s *Server) deleteMemoHandler(c *gin.Context) {
 	idStr := c.Param("id")
 	id, err := strconv.ParseInt(idStr, 10, 64)
 	if err != nil {
 		c.IndentedJSON(500, gin.H{"error": err.Error()})
 		return
 	}
-	err = deleteMemoByID(id)
+	err = deleteMemoByID(s.db, id)
 	if err != nil {
 		c.IndentedJSON(500, gin.H{"error": err.Error()})
 		return
@@ -199,7 +201,7 @@ func main() {
 	cfg.ParseTime = true // DB内部では[]byteで扱われているcreated_atを正しくtime.Timeで解釈するための設定
 
 	var err error
-	db, err = sql.Open("mysql", cfg.FormatDSN())
+	db, err := sql.Open("mysql", cfg.FormatDSN())
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -212,12 +214,12 @@ func main() {
 	fmt.Println("Connected!")
 
 	// ルーティング
+	server := &Server{db: db}
 	router := gin.Default()
-	router.GET("/memos", getAllMemosHandler)
-	router.GET("/memos/:id", getMemoByIDHandler)
-	router.POST("/memos", addMemoHandler)
-	router.PUT("/memos/:id", editMemoHandler)
-	router.DELETE("/memos/:id", deleteMemoHandler)
-
+	router.GET("/memos", server.getAllMemosHandler)
+	router.GET("/memos/:id", server.getMemoByIDHandler)
+	router.POST("/memos", server.addMemoHandler)
+	router.PUT("/memos/:id", server.editMemoHandler)
+	router.DELETE("/memos/:id", server.deleteMemoHandler)
 	router.Run("localhost:8080")
 }
