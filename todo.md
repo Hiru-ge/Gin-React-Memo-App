@@ -27,7 +27,7 @@
 - [x] `database/sql` と `go-sql-driver/mysql` で DB 接続を実装（DSN は環境変数で管理）
 - [x] モデルと CRUD を実装（`GET /memos`, `GET /memos/:id`, `POST /memos`, `PUT /memos/:id`, `DELETE /memos/:id`）
 - [x] Postman / curl で API を手動確認する
-- [ ] リファクタリング
+- [x] リファクタリング
 
 ---
 
