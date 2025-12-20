@@ -75,6 +75,29 @@ func addMemo(memo Memo) (Memo, error) {
 	return newMemo, nil
 }
 
+func editMemo(memo Memo) (Memo, error) {
+	result, err := db.Exec("UPDATE memos SET title = ?, content = ? WHERE id = ?", memo.Title, memo.Content, memo.ID)
+	if err != nil {
+		return Memo{}, fmt.Errorf("addMemo: %v", err)
+	}
+
+	rows, err := result.RowsAffected()
+	if err != nil {
+		return Memo{}, fmt.Errorf("addMemo: %v", err)
+	}
+	if rows == 0 {
+		// 変更行が0でも「変更前と同じ値で更新されたケース」があり得るので存在確認し、存在しない場合だけエラーを返す
+		if _, err := getMemoByID(memo.ID); err == sql.ErrNoRows {
+			return Memo{}, sql.ErrNoRows
+		}
+	}
+	editedMemo, err := getMemoByID(memo.ID)
+	if err != nil {
+		return Memo{}, fmt.Errorf("addMemo: %v", err)
+	}
+	return editedMemo, nil
+}
+
 func getAllMemosHandler(c *gin.Context) {
 	memos, err := getAllMemos()
 	if err != nil {
@@ -114,6 +137,27 @@ func addMemoHandler(c *gin.Context) {
 	c.IndentedJSON(http.StatusCreated, newMemo)
 }
 
+func editMemoHandler(c *gin.Context) {
+	idStr := c.Param("id")
+	id, err := strconv.ParseInt(idStr, 10, 64)
+	if err != nil {
+		c.IndentedJSON(500, gin.H{"error": err.Error()})
+		return
+	}
+	var editedMemo Memo
+	if err := c.BindJSON(&editedMemo); err != nil {
+		c.IndentedJSON(500, gin.H{"error": err.Error()})
+		return
+	}
+	editedMemo.ID = id
+	editedMemo, err = editMemo(editedMemo)
+	if err != nil {
+		c.IndentedJSON(500, gin.H{"error": err.Error()})
+		return
+	}
+	c.IndentedJSON(http.StatusOK, editedMemo)
+}
+
 func main() {
 	cfg := mysql.NewConfig()
 	cfg.User = os.Getenv("DBUSER")
@@ -141,6 +185,7 @@ func main() {
 	router.GET("/memos", getAllMemosHandler)
 	router.GET("/memos/:id", getMemoByIDHandler)
 	router.POST("/memos", addMemoHandler)
+	router.PUT("/memos/:id", editMemoHandler)
 
 	router.Run("localhost:8080")
 }
