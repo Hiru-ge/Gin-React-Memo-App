@@ -119,37 +119,37 @@ func deleteMemoByID(db *sql.DB, id int64) error {
 func (s *Server) getAllMemosHandler(c *gin.Context) {
 	memos, err := getAllMemos(s.db)
 	if err != nil {
-		c.IndentedJSON(500, gin.H{"error": err.Error()})
+		c.IndentedJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
-	c.IndentedJSON(200, memos)
+	c.IndentedJSON(http.StatusOK, memos)
 }
 
 func (s *Server) getMemoByIDHandler(c *gin.Context) {
 	idStr := c.Param("id")
 	id, err := strconv.ParseInt(idStr, 10, 64)
 	if err != nil {
-		c.IndentedJSON(500, gin.H{"error": err.Error()})
+		c.IndentedJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 	memo, err := getMemoByID(s.db, id)
 	if err != nil {
-		c.IndentedJSON(500, gin.H{"error": err.Error()})
+		c.IndentedJSON(http.StatusNotFound, gin.H{"error": "Memo not found"})
 		return
 	}
-	c.IndentedJSON(200, memo)
+	c.IndentedJSON(http.StatusOK, memo)
 }
 
 func (s *Server) addMemoHandler(c *gin.Context) {
 	var newMemo Memo
 	if err := c.BindJSON(&newMemo); err != nil {
-		c.IndentedJSON(500, gin.H{"error": err.Error()})
+		c.IndentedJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 	newMemo, err := addMemo(s.db, newMemo)
 	if err != nil {
-		c.IndentedJSON(500, gin.H{"error": err.Error()})
+		c.IndentedJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 	c.IndentedJSON(http.StatusCreated, newMemo)
@@ -159,18 +159,18 @@ func (s *Server) editMemoHandler(c *gin.Context) {
 	idStr := c.Param("id")
 	id, err := strconv.ParseInt(idStr, 10, 64)
 	if err != nil {
-		c.IndentedJSON(500, gin.H{"error": err.Error()})
+		c.IndentedJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 	var editedMemo Memo
 	if err := c.BindJSON(&editedMemo); err != nil {
-		c.IndentedJSON(500, gin.H{"error": err.Error()})
+		c.IndentedJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 	editedMemo.ID = id
 	editedMemo, err = editMemo(s.db, editedMemo)
 	if err != nil {
-		c.IndentedJSON(500, gin.H{"error": err.Error()})
+		c.IndentedJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 	c.IndentedJSON(http.StatusOK, editedMemo)
@@ -180,12 +180,12 @@ func (s *Server) deleteMemoHandler(c *gin.Context) {
 	idStr := c.Param("id")
 	id, err := strconv.ParseInt(idStr, 10, 64)
 	if err != nil {
-		c.IndentedJSON(500, gin.H{"error": err.Error()})
+		c.IndentedJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 	err = deleteMemoByID(s.db, id)
 	if err != nil {
-		c.IndentedJSON(500, gin.H{"error": err.Error()})
+		c.IndentedJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 	c.Status(http.StatusNoContent)
