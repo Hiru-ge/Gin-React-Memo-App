@@ -1,0 +1,165 @@
+basePath: /
+definitions:
+  main.HTTPError:
+    properties:
+      code:
+        example: 400
+        type: integer
+      message:
+        example: Bad Request
+        type: string
+    type: object
+  main.Memo:
+    properties:
+      content:
+        type: string
+      created_at:
+        type: string
+      id:
+        type: integer
+      title:
+        type: string
+    type: object
+host: localhost:8080
+info:
+  contact: {}
+  description: Ginで作られたメモアプリのAPIサーバーです
+  title: Memo App API
+  version: "1.0"
+paths:
+  /memos:
+    get:
+      consumes:
+      - application/json
+      description: 全てのメモを取得します
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/main.Memo'
+            type: array
+      summary: メモ一覧取得
+      tags:
+      - memos
+    post:
+      consumes:
+      - application/json
+      description: 新しいメモを作成します
+      parameters:
+      - description: Memo content
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/main.Memo'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/main.Memo'
+        "400":
+          description: Invalid input
+          schema:
+            $ref: '#/definitions/main.HTTPError'
+        "500":
+          description: Server error
+          schema:
+            $ref: '#/definitions/main.HTTPError'
+      summary: メモ新規作成
+      tags:
+      - memos
+  /memos/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: IDを指定してメモを削除します
+      parameters:
+      - description: Memo ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Invalid ID format
+          schema:
+            $ref: '#/definitions/main.HTTPError'
+        "500":
+          description: Server error
+          schema:
+            $ref: '#/definitions/main.HTTPError'
+      summary: メモ削除
+      tags:
+      - memos
+    get:
+      consumes:
+      - application/json
+      description: IDを指定して特定のメモを取得します
+      parameters:
+      - description: Memo ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/main.Memo'
+        "400":
+          description: Invalid ID format
+          schema:
+            $ref: '#/definitions/main.HTTPError'
+        "404":
+          description: Memo not found
+          schema:
+            $ref: '#/definitions/main.HTTPError'
+      summary: メモ詳細取得
+      tags:
+      - memos
+    put:
+      consumes:
+      - application/json
+      description: IDを指定してメモの内容を更新します
+      parameters:
+      - description: Memo ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Updated content
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/main.Memo'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/main.Memo'
+        "400":
+          description: Invalid input
+          schema:
+            $ref: '#/definitions/main.HTTPError'
+        "500":
+          description: Server error
+          schema:
+            $ref: '#/definitions/main.HTTPError'
+      summary: メモ編集
+      tags:
+      - memos
+swagger: "2.0"

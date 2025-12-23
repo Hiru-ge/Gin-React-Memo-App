@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 	"log"
+	_ "memo-api/docs"
 	"net/http"
 	"os"
 	"strconv"
@@ -11,6 +12,8 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/go-sql-driver/mysql"
+	swaggerFiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
 )
 
 type Server struct {
@@ -22,6 +25,12 @@ type Memo struct {
 	Title     string    `json:"title"`
 	Content   string    `json:"content"`
 	CreatedAt time.Time `json:"created_at"`
+}
+
+// エラーレスポンスの形を定義します
+type HTTPError struct {
+	Code    int    `json:"code" example:"400"`
+	Message string `json:"message" example:"Bad Request"`
 }
 
 func getAllMemos(db *sql.DB) ([]Memo, error) {
@@ -116,6 +125,14 @@ func deleteMemoByID(db *sql.DB, id int64) error {
 	return nil
 }
 
+// GetAllMemos godoc
+// @Summary      メモ一覧取得
+// @Description  全てのメモを取得します
+// @Tags         memos
+// @Accept       json
+// @Produce      json
+// @Success      200  {array}  Memo
+// @Router       /memos [get]
 func (s *Server) getAllMemosHandler(c *gin.Context) {
 	memos, err := getAllMemos(s.db)
 	if err != nil {
@@ -126,6 +143,17 @@ func (s *Server) getAllMemosHandler(c *gin.Context) {
 	c.IndentedJSON(http.StatusOK, memos)
 }
 
+// GetMemoByID godoc
+// @Summary      メモ詳細取得
+// @Description  IDを指定して特定のメモを取得します
+// @Tags         memos
+// @Accept       json
+// @Produce      json
+// @Param        id   path      int  true  "Memo ID"
+// @Success      200  {object}  Memo
+// @Failure      400  {object}  HTTPError  "Invalid ID format"
+// @Failure      404  {object}  HTTPError  "Memo not found"
+// @Router       /memos/{id} [get]
 func (s *Server) getMemoByIDHandler(c *gin.Context) {
 	id, ok := s.parseID(c)
 	if !ok {
@@ -139,6 +167,17 @@ func (s *Server) getMemoByIDHandler(c *gin.Context) {
 	c.IndentedJSON(http.StatusOK, memo)
 }
 
+// AddMemo godoc
+// @Summary      メモ新規作成
+// @Description  新しいメモを作成します
+// @Tags         memos
+// @Accept       json
+// @Produce      json
+// @Param        request body   Memo  true  "Memo content"
+// @Success      201     {object}  Memo
+// @Failure      400     {object}  HTTPError  "Invalid input"
+// @Failure      500     {object}  HTTPError  "Server error"
+// @Router       /memos [post]
 func (s *Server) addMemoHandler(c *gin.Context) {
 	var newMemo Memo
 	if err := c.BindJSON(&newMemo); err != nil {
@@ -153,6 +192,18 @@ func (s *Server) addMemoHandler(c *gin.Context) {
 	c.IndentedJSON(http.StatusCreated, newMemo)
 }
 
+// EditMemo godoc
+// @Summary      メモ編集
+// @Description  IDを指定してメモの内容を更新します
+// @Tags         memos
+// @Accept       json
+// @Produce      json
+// @Param        id      path   int   true  "Memo ID"
+// @Param        request body   Memo  true  "Updated content"
+// @Success      200     {object}  Memo
+// @Failure      400     {object}  HTTPError  "Invalid input"
+// @Failure      500     {object}  HTTPError  "Server error"
+// @Router       /memos/{id} [put]
 func (s *Server) editMemoHandler(c *gin.Context) {
 	id, ok := s.parseID(c)
 	if !ok {
@@ -172,6 +223,17 @@ func (s *Server) editMemoHandler(c *gin.Context) {
 	c.IndentedJSON(http.StatusOK, editedMemo)
 }
 
+// DeleteMemoHandler godoc
+// @Summary      メモ削除
+// @Description  IDを指定してメモを削除します
+// @Tags         memos
+// @Accept       json
+// @Produce      json
+// @Param        id   path      int  true  "Memo ID"
+// @Success      204  "No Content"
+// @Failure      400  {object}  HTTPError  "Invalid ID format"
+// @Failure      500  {object}  HTTPError  "Server error"
+// @Router       /memos/{id} [delete]
 func (s *Server) deleteMemoHandler(c *gin.Context) {
 	id, ok := s.parseID(c)
 	if !ok {
@@ -195,6 +257,11 @@ func (s *Server) parseID(c *gin.Context) (int64, bool) {
 	return id, true
 }
 
+// @title           Memo App API
+// @version         1.0
+// @description     Ginで作られたメモアプリのAPIサーバーです
+// @host            localhost:8080
+// @BasePath        /
 func main() {
 	cfg := mysql.NewConfig()
 	cfg.User = os.Getenv("DBUSER")
@@ -225,5 +292,6 @@ func main() {
 	router.POST("/memos", server.addMemoHandler)
 	router.PUT("/memos/:id", server.editMemoHandler)
 	router.DELETE("/memos/:id", server.deleteMemoHandler)
+	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 	router.Run("localhost:8080")
 }

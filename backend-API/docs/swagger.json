@@ -1,0 +1,249 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "description": "Ginで作られたメモアプリのAPIサーバーです",
+        "title": "Memo App API",
+        "contact": {},
+        "version": "1.0"
+    },
+    "host": "localhost:8080",
+    "basePath": "/",
+    "paths": {
+        "/memos": {
+            "get": {
+                "description": "全てのメモを取得します",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "memos"
+                ],
+                "summary": "メモ一覧取得",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/main.Memo"
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "新しいメモを作成します",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "memos"
+                ],
+                "summary": "メモ新規作成",
+                "parameters": [
+                    {
+                        "description": "Memo content",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/main.Memo"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/main.Memo"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid input",
+                        "schema": {
+                            "$ref": "#/definitions/main.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Server error",
+                        "schema": {
+                            "$ref": "#/definitions/main.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
+        "/memos/{id}": {
+            "get": {
+                "description": "IDを指定して特定のメモを取得します",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "memos"
+                ],
+                "summary": "メモ詳細取得",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Memo ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/main.Memo"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid ID format",
+                        "schema": {
+                            "$ref": "#/definitions/main.HTTPError"
+                        }
+                    },
+                    "404": {
+                        "description": "Memo not found",
+                        "schema": {
+                            "$ref": "#/definitions/main.HTTPError"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "description": "IDを指定してメモの内容を更新します",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "memos"
+                ],
+                "summary": "メモ編集",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Memo ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Updated content",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/main.Memo"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/main.Memo"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid input",
+                        "schema": {
+                            "$ref": "#/definitions/main.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Server error",
+                        "schema": {
+                            "$ref": "#/definitions/main.HTTPError"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "IDを指定してメモを削除します",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "memos"
+                ],
+                "summary": "メモ削除",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Memo ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "400": {
+                        "description": "Invalid ID format",
+                        "schema": {
+                            "$ref": "#/definitions/main.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Server error",
+                        "schema": {
+                            "$ref": "#/definitions/main.HTTPError"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "main.HTTPError": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "integer",
+                    "example": 400
+                },
+                "message": {
+                    "type": "string",
+                    "example": "Bad Request"
+                }
+            }
+        },
+        "main.Memo": {
+            "type": "object",
+            "properties": {
+                "content": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "title": {
+                    "type": "string"
+                }
+            }
+        }
+    }
+}
