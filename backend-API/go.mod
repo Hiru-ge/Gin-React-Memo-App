@@ -1,4 +1,4 @@
-module memo-api
+module backend-API
 
 go 1.23.0
 

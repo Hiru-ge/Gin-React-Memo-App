@@ -1,10 +1,10 @@
 package main
 
 import (
+	_ "backend-API/docs"
 	"database/sql"
 	"fmt"
 	"log"
-	_ "memo-api/docs"
 	"net/http"
 	"os"
 	"strconv"
