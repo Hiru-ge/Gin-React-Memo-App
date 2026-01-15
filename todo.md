@@ -42,8 +42,8 @@
 ---
 
 ## ドキュメント
-- [ ] `docs/API-requirement.md` を実装に合わせて更新
-- [ ] 使い方の簡単な curl 例を追加する
+- [x] `backend-API/docs`にSwaggerでAPIドキュメントを追加する
+- [x] `docs/spec-screen-flow.md` に画面遷移図と情報設計概要を追加する
 
 ---
 
