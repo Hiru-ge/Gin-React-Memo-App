@@ -1,6 +1,7 @@
 import { getMemoById } from "~/api/memos";
 import type { Route } from "./+types/memo.tsx";
 import type { Memo } from "~/api/memos";
+import { useNavigate } from "react-router";
 
 export async function loader({params}: Route.LoaderArgs) {
   const memo: Memo = await getMemoById(Number(params.id));
@@ -8,15 +9,19 @@ export async function loader({params}: Route.LoaderArgs) {
 }
 
 export default function MemoDetail({loaderData}: Route.ComponentProps) {
+  const navigate = useNavigate();
   const memo = loaderData;
   return (
     <div className="min-h-screen bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
             {/* ヘッダー */}
-            <div className="mb-8">
+            <div className="mb-8 flex items-center">
             <h1 className="text-3xl font-bold text-gray-900 mb-2">
                 メモ詳細
             </h1>
+            <button className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600 ml-6" onClick={() => {navigate(-1)}}>
+                戻る
+            </button>
             </div>
 
             <div className="bg-white rounded-lg shadow p-6">
