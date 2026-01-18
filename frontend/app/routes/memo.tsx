@@ -35,7 +35,7 @@ export default function MemoDetail({loaderData}: Route.ComponentProps) {
                     作成日: {new Date(memo.created_at).toLocaleDateString()}
                 </p>
                 <div className="mt-4 flex space-x-2">
-                    <button className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
+                    <button className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600" onClick={() => {navigate(`/memos/${memo.id}/edit`)}}>
                         編集
                     </button>
                     <button className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600">
