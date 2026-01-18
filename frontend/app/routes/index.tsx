@@ -27,7 +27,7 @@ export default function Memos({loaderData}: Route.ComponentProps) {
         {/* カードグリッド */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           { memos.map((memo) =>
-            <div key={memo.id} className="bg-white rounded-lg shadow p-6">
+            <div key={memo.id} className="bg-white rounded-lg shadow p-6" onClick={() => navigate(`/memos/${memo.id}`)}>
               <h2 className="text-xl font-semibold text-gray-800 mb-4">
                 {memo.title}
               </h2>
@@ -38,10 +38,10 @@ export default function Memos({loaderData}: Route.ComponentProps) {
                 作成日: {new Date(memo.created_at).toLocaleDateString()}
               </p>
               <div className="mt-4 flex space-x-2">
-                <button className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600" onClick={() => {navigate(`/memos/${memo.id}`)}}>
+                <button className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600" onClick={(e) => {e.stopPropagation();}}>
                   編集
                 </button>
-                <button className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600">
+                <button className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600" onClick={(e) => {e.stopPropagation();}}>
                   削除
                 </button>
               </div>
