@@ -19,6 +19,9 @@ export default function Memos({loaderData}: Route.ComponentProps) {
           <h1 className="text-3xl font-bold text-gray-900 mb-2">
             メモ一覧
           </h1>
+          <button className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 mb-4" onClick={() => {navigate('/memos/new')}}>
+            新規メモ作成
+          </button> 
           <p className="text-base text-gray-600">
             現在のメモ数: {memos.length}件
           </p>
