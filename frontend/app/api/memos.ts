@@ -15,6 +15,17 @@ export async function getMemoById(id: number): Promise<Memo> {
     return memo;
 }
 
+export async function createMemo(title: string, content: string): Promise<number> {
+    const memo: Memo = await fetch('http://localhost:8080/memos', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ title, content }),
+    }).then(res => res.json());
+    return memo.id;
+}
+
 export async function editMemo(id: number, title: string, content: string): Promise<Memo> {
     const memo: Memo = await fetch(`http://localhost:8080/memos/${id}`, {
         method: 'PUT',
