@@ -26,7 +26,7 @@ export async function createMemo(title: string, content: string): Promise<number
     return memo.id;
 }
 
-export async function editMemo(id: number, title: string, content: string): Promise<Memo> {
+export async function updateMemo(id: number, title: string, content: string): Promise<Memo> {
     const memo: Memo = await fetch(`http://localhost:8080/memos/${id}`, {
         method: 'PUT',
         headers: {

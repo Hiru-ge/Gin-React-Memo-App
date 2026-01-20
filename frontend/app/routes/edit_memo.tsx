@@ -1,4 +1,4 @@
-import { getMemoById, editMemo } from "~/api/memos";
+import { getMemoById, updateMemo } from "~/api/memos";
 import type { Route } from "./+types/memo.tsx";
 import type { Memo } from "~/api/memos";
 import { useNavigate, Form, redirect } from "react-router";
@@ -12,7 +12,7 @@ export async function action({params, request}: Route.ActionArgs) {
     const formData = await request.formData();
     const title = formData.get("title") as string;
     const content = formData.get("content") as string;
-    await editMemo(Number(params.id), title, content);
+    await updateMemo(Number(params.id), title, content);
     return redirect(`/memos/${params.id}`);
 }
 
