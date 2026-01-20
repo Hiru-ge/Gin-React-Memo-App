@@ -1,7 +1,7 @@
 package main
 
 import (
-	_ "backend-API/docs"
+	_ "backend/docs"
 	"database/sql"
 	"fmt"
 	"log"

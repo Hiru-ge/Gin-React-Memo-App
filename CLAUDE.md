@@ -94,13 +94,13 @@ A simple memo application built as a learning project for RESTful API design and
 - `DBUSER`: MySQL username
 - `DBPASS`: MySQL password
 
-Database connection is configured in backend-API/main.go:266-272 to connect to `127.0.0.1:3306`.
+Database connection is configured in backend/main.go:266-272 to connect to `127.0.0.1:3306`.
 
 ## Development Commands
 
 ### Backend (Go/Gin)
 
-Navigate to `backend-API/` directory first:
+Navigate to `backend/` directory first:
 
 ```bash
 # Run the API server
@@ -145,7 +145,7 @@ The frontend dev server typically runs on `http://localhost:5173`.
 
 ## Architecture
 
-### Backend Architecture (backend-API/)
+### Backend Architecture (backend/)
 
 **Single-file architecture:** All backend logic is in `main.go` (~300 lines).
 
