@@ -1,5 +1,5 @@
 import { createMemo } from "~/api/memos";
-import type { Route } from "./+types/memo.tsx";
+import type { Route } from "./+types/new-memo";
 import { useNavigate, Form, redirect } from "react-router";
 
 export async function action({request}: Route.ActionArgs) {

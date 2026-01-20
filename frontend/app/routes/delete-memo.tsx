@@ -1,5 +1,5 @@
 import { deleteMemo } from "~/api/memos";
-import type { Route } from "./+types/memo.tsx";
+import type { Route } from "./+types/delete-memo";
 import { redirect } from "react-router";
 
 export async function action({ request }: Route.ActionArgs) {

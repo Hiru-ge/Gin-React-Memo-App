@@ -1,5 +1,5 @@
 import { getMemoById, updateMemo } from "~/api/memos";
-import type { Route } from "./+types/memo.tsx";
+import type { Route } from "./+types/edit-memo";
 import type { Memo } from "~/api/memos";
 import { useNavigate, Form, redirect } from "react-router";
 
