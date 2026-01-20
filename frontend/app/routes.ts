@@ -5,4 +5,5 @@ export default [
     route("memos/:id", "routes/memo.tsx"),
     route("memos/:id/edit", "routes/edit_memo.tsx"),
     route("memos/new", "routes/new_memo.tsx"),
+    route("memos/delete", "routes/delete_memo.tsx"),
 ] satisfies RouteConfig;
