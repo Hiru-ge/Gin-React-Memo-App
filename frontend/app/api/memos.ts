@@ -34,7 +34,6 @@ export async function updateMemo(id: number, title: string, content: string): Pr
         },
         body: JSON.stringify({ title, content }),
     }).then(res => res.json());
-    console.log(memo);
     return memo;
 }
 
