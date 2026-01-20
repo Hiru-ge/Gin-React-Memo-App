@@ -41,9 +41,5 @@ export async function updateMemo(id: number, title: string, content: string): Pr
 export async function deleteMemo(id: number): Promise<void> {
     await fetch(`http://localhost:8080/memos/${id}`, {
         method: 'DELETE',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ id }),
     });
 }
