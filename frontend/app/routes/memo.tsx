@@ -3,7 +3,7 @@ import type { Route } from "./+types/memo.tsx";
 import type { Memo } from "~/api/memos";
 import { useNavigate } from "react-router";
 import { useState } from 'react';
-import { DeleteModal } from "~/root";
+import { DeleteModal } from "~/components/DeleteModal";
 
 export async function loader({params}: Route.LoaderArgs) {
   const memo: Memo = await getMemoById(Number(params.id));

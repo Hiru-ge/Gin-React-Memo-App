@@ -10,6 +10,7 @@
 4. [ユーザー操作に反応する](#ユーザー操作に反応する)
 5. [動的な値を扱う（State）](#動的な値を扱うstate)
 6. [外部データを扱う（useEffect）](#外部データを扱うuseeffect)
+7. [プロジェクト構造とコンポーネントの配置](#プロジェクト構造とコンポーネントの配置)
 
 ---
 
@@ -1254,6 +1255,289 @@ export default function MemoList({ loaderData }: Route.ComponentProps) {
 
 ---
 
+## プロジェクト構造とコンポーネントの配置
+
+プロジェクトが大きくなると、すべてのコンポーネントを1つのファイルや同じディレクトリに置くのは管理が難しくなります。適切にファイルを整理することで、コードの可読性・保守性が向上します。
+
+### なぜコンポーネントを分離するのか
+
+**問題：すべてのコンポーネントを1つのファイルに書くと...**
+
+```tsx
+// app/root.tsx（肥大化した例）
+export default function Root() {
+  return <Outlet />;
+}
+
+export function ErrorBoundary() {
+  // エラー表示コンポーネント
+}
+
+export function DeleteModal({ memo, onClose }: { memo: Memo; onClose: () => void }) {
+  // モーダルコンポーネント
+}
+
+export function ConfirmDialog({ message, onConfirm }: ConfirmDialogProps) {
+  // 確認ダイアログコンポーネント
+}
+
+// ...他にもたくさんのコンポーネント
+```
+
+**問題点:**
+- ファイルが長すぎて読みにくい
+- 特定のコンポーネントを探しにくい
+- 複数人で同じファイルを編集すると競合しやすい
+- 関連性の低いコードが混在する
+
+**解決：コンポーネントを別ファイルに分離**
+
+```tsx
+// app/root.tsx（本来の役割だけに集中）
+export default function Root() {
+  return <Outlet />;
+}
+
+export function ErrorBoundary() {
+  // エラー表示コンポーネント
+}
+
+// app/components/DeleteModal.tsx（分離）
+export function DeleteModal({ memo, onClose }: { memo: Memo; onClose: () => void }) {
+  // モーダルコンポーネント
+}
+
+// app/components/ConfirmDialog.tsx（分離）
+export function ConfirmDialog({ message, onConfirm }: ConfirmDialogProps) {
+  // 確認ダイアログコンポーネント
+}
+```
+
+**メリット:**
+- **単一責任の原則**: 1ファイル1コンポーネント（または関連する小さなコンポーネント群）
+- **見通しが良い**: ファイル構造を見れば、どんなコンポーネントがあるか一目瞭然
+- **再利用しやすい**: 必要なコンポーネントだけインポートできる
+- **テストしやすい**: コンポーネント単位でテストを書ける
+
+### 典型的なディレクトリ構造
+
+Reactプロジェクトでは、以下のようなディレクトリ構造が一般的です。
+
+```
+app/
+├── root.tsx              ... アプリ全体のルート（Outlet配置、エラーハンドリング）
+├── routes.ts             ... ルーティング設定（React Router）
+├── routes/               ... 各ページコンポーネント
+│   ├── index.tsx         ... トップページ
+│   ├── memo.tsx          ... メモ詳細ページ
+│   └── edit_memo.tsx     ... メモ編集ページ
+├── components/           ... 再利用可能なUIコンポーネント
+│   ├── DeleteModal.tsx   ... 削除確認モーダル
+│   ├── Button.tsx        ... ボタンコンポーネント
+│   └── Card.tsx          ... カードコンポーネント
+├── api/                  ... API通信関数
+│   └── memos.ts          ... メモ関連のAPI
+└── app.css               ... グローバルスタイル
+```
+
+**各ディレクトリの役割:**
+
+| ディレクトリ | 役割 | 配置するもの |
+|------------|------|------------|
+| `routes/` | ページコンポーネント | URLに対応するページ全体（loader/action含む） |
+| `components/` | 再利用可能なUI部品 | ボタン、モーダル、カードなど汎用コンポーネント |
+| `api/` | バックエンド通信 | fetch関数、API呼び出しロジック |
+| `layouts/` | レイアウトコンポーネント | サイドバー、ヘッダーなど共通レイアウト |
+| `hooks/` | カスタムフック | 再利用可能なロジック（useState/useEffectを使う） |
+| `utils/` | ユーティリティ関数 | 日付フォーマット、バリデーションなど |
+
+### コンポーネントの分離：実例
+
+**リファクタリング前:**
+
+```tsx
+// app/root.tsx
+export function DeleteModal({ memo, onClose }: { memo: Memo; onClose: () => void }) {
+  return (
+    <div className="modal-overlay" onClick={onClose}>
+      <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+        <h2>メモの削除</h2>
+        <p>本当にこのメモを削除しますか？</p>
+        <Form method="post" action="/memos/delete" onSubmit={onClose}>
+          <input type="hidden" name="id" value={memo.id} />
+          <button type="button" onClick={onClose}>キャンセル</button>
+          <button type="submit">削除</button>
+        </Form>
+      </div>
+    </div>
+  );
+}
+
+// app/routes/index.tsx
+import { DeleteModal } from "~/root"; // root.tsxからインポート
+```
+
+**リファクタリング後:**
+
+```tsx
+// app/components/DeleteModal.tsx（新規作成）
+import { Form } from "react-router";
+import type { Memo } from "~/api/memos";
+
+export function DeleteModal({ memo, onClose }: { memo: Memo; onClose: () => void }) {
+  return (
+    <div className="modal-overlay" onClick={onClose}>
+      <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+        <h2>メモの削除</h2>
+        <p>本当にこのメモを削除しますか？</p>
+        <Form method="post" action="/memos/delete" onSubmit={onClose}>
+          <input type="hidden" name="id" value={memo.id} />
+          <button type="button" onClick={onClose}>キャンセル</button>
+          <button type="submit">削除</button>
+        </Form>
+      </div>
+    </div>
+  );
+}
+
+// app/root.tsx（DeleteModalを削除）
+export default function Root() {
+  return <Outlet />;
+}
+
+// app/routes/index.tsx（インポート先を変更）
+import { DeleteModal } from "~/components/DeleteModal";
+```
+
+**変更点:**
+1. `components/`ディレクトリを作成
+2. `DeleteModal`を`components/DeleteModal.tsx`に移動
+3. 必要なインポート（Form, Memo型）を追加
+4. 使う側のインポートパスを`~/root`から`~/components/DeleteModal`に変更
+
+### インポートパスの書き方
+
+Reactプロジェクトでは、`~`（チルダ）をプロジェクトルートのエイリアスとして使うことが多いです。
+
+**相対パスと絶対パス:**
+
+```tsx
+// ❌ 相対パス：ファイル移動時に壊れやすい
+import { DeleteModal } from "../../../components/DeleteModal";
+
+// ✅ 絶対パス（~エイリアス）：ファイル移動に強い
+import { DeleteModal } from "~/components/DeleteModal";
+```
+
+**~エイリアスの設定（React Router v7）:**
+
+React Router v7では、デフォルトで`~`が`app/`ディレクトリを指すように設定されています。
+
+```tsx
+// app/routes/index.tsx から
+import { DeleteModal } from "~/components/DeleteModal";
+// → app/components/DeleteModal.tsx を参照
+
+import { getMemos } from "~/api/memos";
+// → app/api/memos.ts を参照
+```
+
+### コンポーネント分離の判断基準
+
+**いつコンポーネントを分離すべきか:**
+
+| 状況 | 分離すべきか | 理由 |
+|------|------------|------|
+| 複数の場所で使う | ✅ する | 再利用性が高まる |
+| 50行以上の長いコンポーネント | ✅ する | 可読性が向上する |
+| 独立したUI要素（モーダル、ボタンなど） | ✅ する | 単一責任の原則 |
+| 1箇所でしか使わない小さなコンポーネント | ❌ しない | 過度な分離は逆に複雑化 |
+| 親コンポーネントと強く結合している | ❌ しない | 分離しても再利用できない |
+
+**例：モーダルコンポーネント**
+
+```tsx
+// ✅ 分離すべき：複数ページで使う可能性がある
+// app/components/DeleteModal.tsx
+export function DeleteModal({ item, onClose }: DeleteModalProps) {
+  // ...
+}
+
+// ✅ 分離すべき：汎用的なボタンコンポーネント
+// app/components/Button.tsx
+export function Button({ children, onClick, variant }: ButtonProps) {
+  // ...
+}
+
+// ❌ 分離不要：特定ページでしか使わない小さな部品
+// app/routes/index.tsx内に定義
+function MemoListHeader() {
+  return <h1>メモ一覧</h1>;
+}
+```
+
+### 段階的なリファクタリング
+
+プロジェクトの成長に応じて、段階的にファイル構造を整理します。
+
+**ステップ1: すべて1ファイル（学習初期）**
+```
+app/
+└── routes/
+    └── index.tsx  // すべてここに書く
+```
+
+**ステップ2: コンポーネントを分離**
+```
+app/
+├── routes/
+│   └── index.tsx
+└── components/
+    └── MemoCard.tsx  // 再利用可能なコンポーネントを分離
+```
+
+**ステップ3: API通信を分離**
+```
+app/
+├── routes/
+│   └── index.tsx
+├── components/
+│   └── MemoCard.tsx
+└── api/
+    └── memos.ts  // fetch関数をまとめる
+```
+
+**ステップ4: さらに細分化（大規模プロジェクト）**
+```
+app/
+├── routes/
+├── components/
+│   ├── common/       // 汎用コンポーネント
+│   │   ├── Button.tsx
+│   │   └── Modal.tsx
+│   └── memo/         // メモ関連コンポーネント
+│       ├── MemoCard.tsx
+│       └── MemoForm.tsx
+├── api/
+├── hooks/            // カスタムフック
+└── utils/            // ユーティリティ関数
+```
+
+### まとめ
+
+**コンポーネント配置のベストプラクティス:**
+
+1. **root.tsx**: アプリ全体の設定（Outlet、エラーハンドリング）のみ
+2. **routes/**: ページ全体の責務（loader/action + レイアウト）
+3. **components/**: 再利用可能なUI部品
+4. **api/**: バックエンド通信ロジック
+5. **~エイリアス**: 絶対パスで明確にインポート
+6. **段階的に整理**: 最初から完璧を目指さず、必要に応じてリファクタリング
+
+適切なファイル構造は、チーム開発や将来の自分のためのドキュメントにもなります。
+
+---
+
 ## 開発環境とツール
 
 Reactアプリの開発には、いくつかのツールやファイルが関わります。
@@ -1426,5 +1710,9 @@ Reactアプリの開発は、通常以下の流れで進めます：
 5. **外部とやり取りする**
    - useEffectで副作用を処理
    - ただしReact Router v7ではloader関数を使うことが多い
+
+6. **プロジェクト構造を整理する**
+   - コンポーネントを適切に配置する
+   - ファイル構造で可読性・保守性を向上
 
 この順序で理解を深めていけば、Reactの基礎は習得できます。
