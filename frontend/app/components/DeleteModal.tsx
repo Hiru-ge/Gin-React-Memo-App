@@ -1,8 +1,13 @@
 import { Form } from "react-router";
 import type { Memo } from "~/api/memos";
 
-export function DeleteModal({ memo, onClose }: { memo: Memo; onClose: () => void }) {
-
+export function DeleteModal({
+  memo,
+  onClose,
+}: {
+  memo: Memo;
+  onClose: () => void;
+}) {
   return (
     // 背景オーバーレイ
     <div
