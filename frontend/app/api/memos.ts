@@ -6,17 +6,17 @@ export type Memo = {
 }
 
 export async function getMemos(): Promise<Memo[]> {
-    const memos: Memo[] = await fetch('http://localhost:8080/memos').then(res => res.json());
+    const memos = await fetch('http://localhost:8080/memos').then(res => res.json());
     return memos;
 }
 
 export async function getMemoById(id: number): Promise<Memo> {
-    const memo: Memo = await fetch(`http://localhost:8080/memos/${id}`).then(res => res.json());
+    const memo = await fetch(`http://localhost:8080/memos/${id}`).then(res => res.json());
     return memo;
 }
 
 export async function createMemo(title: string, content: string): Promise<number> {
-    const memo: Memo = await fetch('http://localhost:8080/memos', {
+    const memo = await fetch('http://localhost:8080/memos', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -27,7 +27,7 @@ export async function createMemo(title: string, content: string): Promise<number
 }
 
 export async function updateMemo(id: number, title: string, content: string): Promise<Memo> {
-    const memo: Memo = await fetch(`http://localhost:8080/memos/${id}`, {
+    const memo = await fetch(`http://localhost:8080/memos/${id}`, {
         method: 'PUT',
         headers: {
             'Content-Type': 'application/json',
