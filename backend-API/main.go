@@ -33,6 +33,14 @@ type HTTPError struct {
 	Message string `json:"message" example:"Bad Request"`
 }
 
+// respondError はHTTPErrorを使用してエラーレスポンスを返すヘルパー関数です
+func respondError(c *gin.Context, code int, message string) {
+	c.IndentedJSON(code, HTTPError{
+		Code:    code,
+		Message: message,
+	})
+}
+
 func getMemos(db *sql.DB) ([]Memo, error) {
 	var memos []Memo
 
@@ -141,7 +149,7 @@ func deleteMemoByID(db *sql.DB, id int64) error {
 func (s *Server) getMemosHandler(c *gin.Context) {
 	memos, err := getMemos(s.db)
 	if err != nil {
-		c.IndentedJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		respondError(c, http.StatusInternalServerError, err.Error())
 		return
 	}
 
@@ -166,7 +174,7 @@ func (s *Server) getMemoByIDHandler(c *gin.Context) {
 	}
 	memo, err := getMemoByID(s.db, id)
 	if err != nil {
-		c.IndentedJSON(http.StatusNotFound, gin.H{"error": "Memo not found"})
+		respondError(c, http.StatusNotFound, "Memo not found")
 		return
 	}
 	c.IndentedJSON(http.StatusOK, memo)
@@ -186,12 +194,12 @@ func (s *Server) getMemoByIDHandler(c *gin.Context) {
 func (s *Server) createMemoHandler(c *gin.Context) {
 	var newMemo Memo
 	if err := c.BindJSON(&newMemo); err != nil {
-		c.IndentedJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		respondError(c, http.StatusBadRequest, err.Error())
 		return
 	}
 	newMemo, err := createMemo(s.db, newMemo)
 	if err != nil {
-		c.IndentedJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		respondError(c, http.StatusInternalServerError, err.Error())
 		return
 	}
 	c.IndentedJSON(http.StatusCreated, newMemo)
@@ -216,13 +224,13 @@ func (s *Server) updateMemoHandler(c *gin.Context) {
 	}
 	var editedMemo Memo
 	if err := c.BindJSON(&editedMemo); err != nil {
-		c.IndentedJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		respondError(c, http.StatusBadRequest, err.Error())
 		return
 	}
 	editedMemo.ID = id
 	editedMemo, err := updateMemo(s.db, editedMemo)
 	if err != nil {
-		c.IndentedJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		respondError(c, http.StatusInternalServerError, err.Error())
 		return
 	}
 	c.IndentedJSON(http.StatusOK, editedMemo)
@@ -246,7 +254,7 @@ func (s *Server) deleteMemoHandler(c *gin.Context) {
 	}
 	err := deleteMemoByID(s.db, id)
 	if err != nil {
-		c.IndentedJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		respondError(c, http.StatusInternalServerError, err.Error())
 		return
 	}
 	c.Status(http.StatusNoContent)
@@ -256,7 +264,7 @@ func (s *Server) parseID(c *gin.Context) (int64, bool) {
 	idStr := c.Param("id")
 	id, err := strconv.ParseInt(idStr, 10, 64)
 	if err != nil {
-		c.IndentedJSON(http.StatusBadRequest, gin.H{"error": "Invalid ID format"})
+		respondError(c, http.StatusBadRequest, "Invalid ID format")
 		return 0, false
 	}
 	return id, true
