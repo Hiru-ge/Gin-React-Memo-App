@@ -70,7 +70,8 @@ func getMemoByID(db *sql.DB, id int64) (Memo, error) {
 }
 
 func createMemo(db *sql.DB, memo Memo) (Memo, error) {
-	result, err := db.Exec("INSERT INTO memos (title, content) VALUES (?, ?)", memo.Title, memo.Content)
+	createdAt := time.Now()
+	result, err := db.Exec("INSERT INTO memos (title, content, created_at) VALUES (?, ?, ?)", memo.Title, memo.Content, createdAt)
 	if err != nil {
 		return Memo{}, fmt.Errorf("createMemo: %v", err)
 	}
@@ -79,11 +80,13 @@ func createMemo(db *sql.DB, memo Memo) (Memo, error) {
 	if err != nil {
 		return Memo{}, fmt.Errorf("createMemo: %v", err)
 	}
-	newMemo, err := getMemoByID(db, id)
-	if err != nil {
-		return Memo{}, fmt.Errorf("createMemo: %v", err)
-	}
-	return newMemo, nil
+
+	return Memo{
+		ID:        id,
+		Title:     memo.Title,
+		Content:   memo.Content,
+		CreatedAt: createdAt,
+	}, nil
 }
 
 func updateMemo(db *sql.DB, memo Memo) (Memo, error) {
@@ -102,6 +105,8 @@ func updateMemo(db *sql.DB, memo Memo) (Memo, error) {
 			return Memo{}, sql.ErrNoRows
 		}
 	}
+
+	// getMemoByIDによるDB呼び出しが発生するので、createMemoに倣ってDB呼び出し削減しても良いのだが、現状パフォーマンスはそこまでシビアな要件ではないので可読性を優先
 	updatedMemo, err := getMemoByID(db, memo.ID)
 	if err != nil {
 		return Memo{}, fmt.Errorf("updateMemo: %v", err)
