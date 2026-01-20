@@ -37,3 +37,13 @@ export async function editMemo(id: number, title: string, content: string): Prom
     console.log(memo);
     return memo;
 }
+
+export async function deleteMemo(id: number): Promise<void> {
+    await fetch(`http://localhost:8080/memos/${id}`, {
+        method: 'DELETE',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ id }),
+    });
+}

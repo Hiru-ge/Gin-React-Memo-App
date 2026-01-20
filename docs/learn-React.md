@@ -788,6 +788,219 @@ function MemoDeletModal() {
 }
 ```
 
+### モーダルの実装パターン
+
+モーダル（ダイアログ）は、UIの状態管理の典型的な例です。段階的に実装方法を学びます。
+
+#### パターン1: 基本的なモーダル（開閉のみ）
+
+**問題：ボタンをクリックしたらモーダルを表示し、閉じるボタンで非表示にしたい**
+
+```tsx
+function ConfirmDialog() {
+  const [isOpen, setIsOpen] = useState(false);
+
+  return (
+    <>
+      <button onClick={() => setIsOpen(true)}>
+        確認ダイアログを開く
+      </button>
+
+      {isOpen && (
+        <div className="modal">
+          <p>この操作を実行しますか？</p>
+          <button onClick={() => setIsOpen(false)}>
+            キャンセル
+          </button>
+          <button onClick={() => {
+            // 何か処理を実行
+            console.log('実行されました');
+            setIsOpen(false);
+          }}>
+            実行
+          </button>
+        </div>
+      )}
+    </>
+  );
+}
+```
+
+**ポイント:**
+- `isOpen` という boolean のStateで開閉を管理
+- `isOpen && <Modal>` で条件付きレンダリング
+- `true` の時だけモーダルが表示される
+
+#### パターン2: データを渡すモーダル（コンポーネント分離）
+
+**問題：複数の場所から同じモーダルを使いたい。また、削除対象のアイテムを渡したい**
+
+**解決：モーダルを別コンポーネントに分離し、propsでデータと閉じる関数を渡す**
+
+```tsx
+// モーダルコンポーネント
+type DeleteModalProps = {
+  item: { id: number; name: string };
+  onClose: () => void;
+  onConfirm: () => void;
+};
+
+function DeleteModal({ item, onClose, onConfirm }: DeleteModalProps) {
+  return (
+    <div className="modal-overlay" onClick={onClose}>
+      <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+        <h2>アイテムの削除</h2>
+        <p>{item.name} を削除しますか？</p>
+        <div className="modal-buttons">
+          <button onClick={onClose}>
+            キャンセル
+          </button>
+          <button onClick={onConfirm}>
+            削除
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// 使う側のコンポーネント
+function ItemList() {
+  const [deletingItem, setDeletingItem] = useState<{ id: number; name: string } | null>(null);
+
+  const handleDelete = () => {
+    if (deletingItem) {
+      console.log(`削除: ${deletingItem.id}`);
+      // 削除処理...
+      setDeletingItem(null); // モーダルを閉じる
+    }
+  };
+
+  return (
+    <div>
+      <button onClick={() => setDeletingItem({ id: 1, name: 'アイテム1' })}>
+        アイテム1を削除
+      </button>
+      <button onClick={() => setDeletingItem({ id: 2, name: 'アイテム2' })}>
+        アイテム2を削除
+      </button>
+
+      {/* deletingItemがnullでない時だけモーダルを表示 */}
+      {deletingItem && (
+        <DeleteModal
+          item={deletingItem}
+          onClose={() => setDeletingItem(null)}
+          onConfirm={handleDelete}
+        />
+      )}
+    </div>
+  );
+}
+```
+
+**ポイント:**
+- `deletingItem` を `null` または `オブジェクト` で管理
+  - `null` → モーダル非表示
+  - `オブジェクト` → モーダル表示 + データを保持
+- **条件付きレンダリングの仕組み:**
+  ```tsx
+  {deletingItem && <Modal item={deletingItem} />}
+  ```
+  - `deletingItem` が `null` → falsy → 何も表示されない
+  - `deletingItem` が `オブジェクト` → truthy → `<Modal>` が表示される
+- `onClick={(e) => e.stopPropagation()}` でモーダル内クリックが背景に伝わらない
+
+#### パターン3: Form送信時に自動で閉じる（onSubmit使用）
+
+**問題：フォーム送信ボタンを押したら、自動的にモーダルを閉じたい**
+
+**解決：FormのonSubmitイベントでonCloseを呼ぶ**
+
+```tsx
+import { Form } from 'react-router';
+
+type DeleteModalProps = {
+  item: { id: number; name: string };
+  onClose: () => void;
+};
+
+function DeleteModal({ item, onClose }: DeleteModalProps) {
+  return (
+    <div className="modal-overlay" onClick={onClose}>
+      <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+        <h2>アイテムの削除</h2>
+        <p>{item.name} を削除しますか？</p>
+
+        {/* onSubmitでモーダルを閉じる */}
+        <Form method="post" action="/items/delete" onSubmit={onClose}>
+          <input type="hidden" name="id" value={item.id} />
+          <button type="button" onClick={onClose}>
+            キャンセル
+          </button>
+          <button type="submit">
+            削除
+          </button>
+        </Form>
+      </div>
+    </div>
+  );
+}
+```
+
+**ポイント:**
+- **Form送信の流れ:**
+  1. ユーザーが削除ボタンをクリック
+  2. `onSubmit`イベントが発火 → `onClose()`が実行される → **モーダルが閉じる**
+  3. Form送信処理が継続される
+  4. actionが実行される（削除処理）
+  5. redirect()でページ遷移（または同じページの再読み込み）
+
+- **メリット:**
+  - シンプルで理解しやすい
+  - useEffectやuseFetcherが不要
+  - フォーム送信と同時にモーダルが閉じるのでUXが良い
+
+- **注意点:**
+  - 同じページにredirectする場合（例: `redirect("/")`で同じページに戻る）でも、loaderが再実行されてデータが更新されるため、親コンポーネントの状態もリセットされる
+  - エラーハンドリングが必要な場合は、後述のパターン4を検討する
+
+#### モーダルのオーバーレイとクリック制御
+
+モーダルの背景（オーバーレイ）をクリックしたら閉じる、という挙動の実装：
+
+```tsx
+function Modal({ onClose }: { onClose: () => void }) {
+  return (
+    // 背景オーバーレイ：クリックで閉じる
+    <div
+      className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center"
+      onClick={onClose}
+    >
+      {/* モーダル本体：クリックイベントを止める */}
+      <div
+        className="bg-white rounded-lg p-6 max-w-md"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <h2>モーダル</h2>
+        <button onClick={onClose}>閉じる</button>
+      </div>
+    </div>
+  );
+}
+```
+
+**イベント伝播の仕組み:**
+1. モーダル内部をクリック → `onClick={(e) => e.stopPropagation()}` でイベント伝播を止める
+2. イベントが親（背景オーバーレイ）に伝わらない → `onClose` は呼ばれない
+3. 背景をクリック → 直接 `onClick={onClose}` が呼ばれる → モーダルが閉じる
+
+**まとめ:**
+- モーダルの開閉は `useState` で管理
+- `null` または `オブジェクト` で状態を管理すると、データも一緒に保持できる
+- 条件付きレンダリング `{state && <Modal>}` で表示/非表示を切り替え
+- Form送信時に自動で閉じるには `onSubmit={onClose}` を使う（シンプルで推奨）
+- `e.stopPropagation()` でクリックイベントの伝播を制御
+
 ---
 
 ## 外部データを扱う（useEffect）
