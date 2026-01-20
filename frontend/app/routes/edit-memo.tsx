@@ -4,17 +4,17 @@ import type { Memo } from "~/api/memos";
 import { redirect } from "react-router";
 import MemoForm from "~/components/MemoForm";
 
-export async function loader({params}: Route.LoaderArgs) {
+export async function loader({ params }: Route.LoaderArgs) {
   const memo: Memo = await getMemoById(Number(params.id));
   return memo;
 }
 
-export async function action({params, request}: Route.ActionArgs) {
-    const formData = await request.formData();
-    const title = formData.get("title") as string;
-    const content = formData.get("content") as string;
-    await updateMemo(Number(params.id), title, content);
-    return redirect(`/memos/${params.id}`);
+export async function action({ params, request }: Route.ActionArgs) {
+  const formData = await request.formData();
+  const title = formData.get("title") as string;
+  const content = formData.get("content") as string;
+  await updateMemo(Number(params.id), title, content);
+  return redirect(`/memos/${params.id}`);
 }
 
 export default function MemoEdit({ loaderData }: Route.ComponentProps) {
