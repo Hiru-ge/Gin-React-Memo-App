@@ -19,6 +19,7 @@
 ReactはFacebook（Meta）が開発したJavaScriptライブラリで、Webアプリケーションのユーザーインターフェース（UI）を構築するために使用されます。
 
 **Reactの3つの特徴:**
+
 - **コンポーネントベース**: UIを独立した再利用可能な部品（コンポーネント）に分割できる
 - **宣言的**: 「どう見えるべきか」を書くだけで、Reactが効率的に更新してくれる
 - **仮想DOM**: 実際のDOMを直接操作せず、効率的に画面を更新する仕組み
@@ -43,15 +44,18 @@ function Welcome() {
 コンポーネントは通常の関数ですが、JSX（後述）を返します。
 
 **命名規則:**
+
 - コンポーネント名は**必ず大文字で始める**（`Welcome`, `UserProfile`, `Button`）
 - 小文字で始めると、HTMLタグとして認識されてしまう
 
 ```tsx
-function welcome() {  // ❌ 小文字で始めるとエラー
+function welcome() {
+  // ❌ 小文字で始めるとエラー
   return <h1>Hello</h1>;
 }
 
-function Welcome() {  // ✅ 大文字で始める
+function Welcome() {
+  // ✅ 大文字で始める
   return <h1>Hello</h1>;
 }
 ```
@@ -74,6 +78,7 @@ function UserProfile() {
 **JSXの基本ルール:**
 
 **1. 単一のルート要素を返す**
+
 ```tsx
 // ❌ 複数のルート要素はエラー
 function Bad() {
@@ -105,6 +110,7 @@ function Better() {
 ```
 
 **2. すべてのタグを閉じる**
+
 ```tsx
 // ❌ HTMLでは<img>と書けるが、JSXではエラー
 <img src="image.png">
@@ -152,6 +158,7 @@ function Greeting() {
 ```
 
 **使用例:**
+
 ```tsx
 function MemoCard() {
   const memo = {
@@ -179,6 +186,7 @@ function MemoCard() {
 コンポーネントを再利用可能にするには、外部からデータを受け取る必要があります。それが**Props**です。
 
 **問題：同じカードを何度も書くのは面倒**
+
 ```tsx
 function MemoList() {
   return (
@@ -201,6 +209,7 @@ function MemoList() {
 ```
 
 **解決：Propsでカードコンポーネントを再利用**
+
 ```tsx
 // カードコンポーネント：Propsでデータを受け取る
 function MemoCard({ title, content }: { title: string; content: string }) {
@@ -225,12 +234,13 @@ function MemoList() {
 ```
 
 **TypeScriptでの型定義（推奨）:**
+
 ```tsx
 // 型を別で定義すると読みやすい
 type MemoCardProps = {
   title: string;
   content: string;
-  createdAt?: Date;  // ?は省略可能
+  createdAt?: Date; // ?は省略可能
 };
 
 function MemoCard({ title, content, createdAt }: MemoCardProps) {
@@ -249,13 +259,14 @@ function MemoCard({ title, content, createdAt }: MemoCardProps) {
 実際のアプリでは、配列のデータを表示することが多いです。
 
 **問題：APIから取得したデータ（配列）を表示したい**
+
 ```tsx
 function MemoList() {
   // APIから取得したデータ（配列）
   const memos = [
-    { id: 1, title: '買い物リスト', content: '牛乳、卵' },
-    { id: 2, title: 'TODO', content: 'レポート提出' },
-    { id: 3, title: 'アイデア', content: 'アプリ開発' },
+    { id: 1, title: "買い物リスト", content: "牛乳、卵" },
+    { id: 2, title: "TODO", content: "レポート提出" },
+    { id: 3, title: "アイデア", content: "アプリ開発" },
   ];
 
   // どうやって表示する？
@@ -263,22 +274,19 @@ function MemoList() {
 ```
 
 **解決：map()を使う**
+
 ```tsx
 function MemoList() {
   const memos = [
-    { id: 1, title: '買い物リスト', content: '牛乳、卵' },
-    { id: 2, title: 'TODO', content: 'レポート提出' },
-    { id: 3, title: 'アイデア', content: 'アプリ開発' },
+    { id: 1, title: "買い物リスト", content: "牛乳、卵" },
+    { id: 2, title: "TODO", content: "レポート提出" },
+    { id: 3, title: "アイデア", content: "アプリ開発" },
   ];
 
   return (
     <div>
       {memos.map((memo) => (
-        <MemoCard
-          key={memo.id}
-          title={memo.title}
-          content={memo.content}
-        />
+        <MemoCard key={memo.id} title={memo.title} content={memo.content} />
       ))}
     </div>
   );
@@ -291,19 +299,23 @@ Reactは`key`を使って、どの要素が変更/追加/削除されたかを�
 
 ```tsx
 // ❌ keyがないと警告が出る
-{memos.map((memo) => (
-  <MemoCard title={memo.title} content={memo.content} />
-))}
+{
+  memos.map((memo) => <MemoCard title={memo.title} content={memo.content} />);
+}
 
 // ❌ インデックスをkeyにする（順序が変わる可能性がある場合は避ける）
-{memos.map((memo, index) => (
-  <MemoCard key={index} title={memo.title} content={memo.content} />
-))}
+{
+  memos.map((memo, index) => (
+    <MemoCard key={index} title={memo.title} content={memo.content} />
+  ));
+}
 
 // ✅ 一意のIDをkeyにする
-{memos.map((memo) => (
-  <MemoCard key={memo.id} title={memo.title} content={memo.content} />
-))}
+{
+  memos.map((memo) => (
+    <MemoCard key={memo.id} title={memo.title} content={memo.content} />
+  ));
+}
 ```
 
 ### 条件付きレンダリング：条件に応じて表示を変える
@@ -311,6 +323,7 @@ Reactは`key`を使って、どの要素が変更/追加/削除されたかを�
 **問題：データがない時に「メモがありません」と表示したい**
 
 **解決策1：三項演算子**
+
 ```tsx
 function MemoList({ memos }: { memos: Memo[] }) {
   return (
@@ -319,7 +332,9 @@ function MemoList({ memos }: { memos: Memo[] }) {
         <p>メモがありません</p>
       ) : (
         <div>
-          {memos.map(memo => <MemoCard key={memo.id} {...memo} />)}
+          {memos.map((memo) => (
+            <MemoCard key={memo.id} {...memo} />
+          ))}
         </div>
       )}
     </div>
@@ -328,6 +343,7 @@ function MemoList({ memos }: { memos: Memo[] }) {
 ```
 
 **解決策2：&& 演算子（条件がtrueの時だけ表示）**
+
 ```tsx
 function MemoList({ memos }: { memos: Memo[] }) {
   return (
@@ -335,7 +351,9 @@ function MemoList({ memos }: { memos: Memo[] }) {
       {memos.length === 0 && <p>メモがありません</p>}
       {memos.length > 0 && (
         <div>
-          {memos.map(memo => <MemoCard key={memo.id} {...memo} />)}
+          {memos.map((memo) => (
+            <MemoCard key={memo.id} {...memo} />
+          ))}
         </div>
       )}
     </div>
@@ -344,6 +362,7 @@ function MemoList({ memos }: { memos: Memo[] }) {
 ```
 
 **解決策3：Early Return（推奨：読みやすい）**
+
 ```tsx
 function MemoList({ memos }: { memos: Memo[] }) {
   // 空の場合は早期リターン
@@ -354,7 +373,9 @@ function MemoList({ memos }: { memos: Memo[] }) {
   // 通常の表示
   return (
     <div>
-      {memos.map(memo => <MemoCard key={memo.id} {...memo} />)}
+      {memos.map((memo) => (
+        <MemoCard key={memo.id} {...memo} />
+      ))}
     </div>
   );
 }
@@ -371,33 +392,28 @@ function MemoList({ memos }: { memos: Memo[] }) {
 **問題：ボタンをクリックした時に何か処理をしたい**
 
 **解決：onClickイベントハンドラ**
+
 ```tsx
 function DeleteButton() {
   // イベントハンドラ関数を定義
   const handleClick = () => {
-    console.log('削除ボタンがクリックされました');
+    console.log("削除ボタンがクリックされました");
   };
 
-  return (
-    <button onClick={handleClick}>
-      削除
-    </button>
-  );
+  return <button onClick={handleClick}>削除</button>;
 }
 ```
 
 **インラインでも書ける:**
+
 ```tsx
 function DeleteButton() {
-  return (
-    <button onClick={() => console.log('削除')}>
-      削除
-    </button>
-  );
+  return <button onClick={() => console.log("削除")}>削除</button>;
 }
 ```
 
 **注意：関数を呼び出さないこと**
+
 ```tsx
 // ❌ これは間違い：レンダリング時に実行されてしまう
 <button onClick={handleClick()}>削除</button>
@@ -416,7 +432,7 @@ function DeleteButton() {
 ```tsx
 function SearchForm() {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    console.log('入力値:', e.target.value);
+    console.log("入力値:", e.target.value);
   };
 
   return <input type="text" onChange={handleChange} />;
@@ -430,12 +446,14 @@ function SearchForm() {
 ```tsx
 function MemoCard({ memo }: { memo: Memo }) {
   return (
-    <div onClick={() => console.log('カードをクリック')}>
+    <div onClick={() => console.log("カードをクリック")}>
       <h2>{memo.title}</h2>
-      <button onClick={(e) => {
-        e.stopPropagation(); // 親のonClickを止める
-        console.log('削除ボタンをクリック');
-      }}>
+      <button
+        onClick={(e) => {
+          e.stopPropagation(); // 親のonClickを止める
+          console.log("削除ボタンをクリック");
+        }}
+      >
         削除
       </button>
     </div>
@@ -444,36 +462,38 @@ function MemoCard({ memo }: { memo: Memo }) {
 ```
 
 **よく使うイベントメソッド:**
+
 - `e.stopPropagation()`: イベントの伝播を止める（親要素のイベントを発火させない）
 - `e.preventDefault()`: ブラウザのデフォルト動作を止める（例：フォーム送信、リンククリック）
 
 ### 主なイベント一覧
 
-| イベント | 発火タイミング | 用途 |
-|---------|-------------|------|
-| `onClick` | クリック時 | ボタン、カードのクリック |
-| `onChange` | 入力値変更時 | input, textarea, select |
-| `onSubmit` | フォーム送信時 | form要素 |
-| `onMouseEnter` | マウスが要素に入った時 | ホバー効果 |
-| `onMouseLeave` | マウスが要素から出た時 | ホバー効果 |
-| `onFocus` | フォーカス時 | input要素 |
-| `onBlur` | フォーカスが外れた時 | バリデーション |
+| イベント       | 発火タイミング         | 用途                     |
+| -------------- | ---------------------- | ------------------------ |
+| `onClick`      | クリック時             | ボタン、カードのクリック |
+| `onChange`     | 入力値変更時           | input, textarea, select  |
+| `onSubmit`     | フォーム送信時         | form要素                 |
+| `onMouseEnter` | マウスが要素に入った時 | ホバー効果               |
+| `onMouseLeave` | マウスが要素から出た時 | ホバー効果               |
+| `onFocus`      | フォーカス時           | input要素                |
+| `onBlur`       | フォーカスが外れた時   | バリデーション           |
 
 ### 命名規則とベストプラクティス
 
 Reactでは、イベント関連の命名規則が慣習的に決まっています。
 
 **イベント関連の命名:**
+
 ```tsx
 function MyComponent() {
   // ハンドラ関数は handle で始める
   const handleClick = () => {
-    console.log('clicked');
+    console.log("clicked");
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('submitted');
+    console.log("submitted");
   };
 
   return (
@@ -487,6 +507,7 @@ function MyComponent() {
 ```
 
 **カスタムコンポーネントでのイベント:**
+
 ```tsx
 // 子コンポーネント：onSomething という名前で受け取る
 function CustomButton({ onClick }: { onClick: () => void }) {
@@ -496,7 +517,7 @@ function CustomButton({ onClick }: { onClick: () => void }) {
 // 親コンポーネント：handleSomething という名前で定義
 function Parent() {
   const handleButtonClick = () => {
-    console.log('clicked');
+    console.log("clicked");
   };
 
   return <CustomButton onClick={handleButtonClick} />;
@@ -504,6 +525,7 @@ function Parent() {
 ```
 
 **命名規則まとめ:**
+
 - **イベントprops**: `onSomething`（onClick, onSubmit, onChange など）
 - **イベントハンドラ**: `handleSomething`（handleClick, handleSubmit, handleChange など）
 - データの流れは常に「親→子」（Props経由）
@@ -518,6 +540,7 @@ function Parent() {
 ### なぜStateが必要か
 
 **問題：通常の変数では画面が更新されない**
+
 ```tsx
 function Counter() {
   let count = 0; // 通常の変数
@@ -537,8 +560,9 @@ function Counter() {
 ```
 
 **解決：useState を使う**
+
 ```tsx
-import { useState } from 'react';
+import { useState } from "react";
 
 function Counter() {
   // [現在の値, 値を更新する関数] = useState(初期値)
@@ -578,8 +602,8 @@ function Counter() {
 
 ```tsx
 function LoginForm() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
 
   return (
     <form>
@@ -606,35 +630,33 @@ function LoginForm() {
 ```tsx
 function UserProfile() {
   const [user, setUser] = useState({
-    name: '',
+    name: "",
     age: 0,
-    email: '',
+    email: "",
   });
 
   // オブジェクトを更新する時は、スプレッド構文で既存の値をコピー
   const updateName = (name: string) => {
     setUser({ ...user, name });
     // または
-    setUser(prevUser => ({ ...prevUser, name }));
+    setUser((prevUser) => ({ ...prevUser, name }));
   };
 
   return (
-    <input
-      value={user.name}
-      onChange={(e) => updateName(e.target.value)}
-    />
+    <input value={user.name} onChange={(e) => updateName(e.target.value)} />
   );
 }
 ```
 
 **重要：Stateは直接変更しない（イミュータビリティ）**
+
 ```tsx
 // ❌ 直接変更はNG
-user.name = '太郎';
+user.name = "太郎";
 setUser(user);
 
 // ✅ 新しいオブジェクトを作る
-setUser({ ...user, name: '太郎' });
+setUser({ ...user, name: "太郎" });
 ```
 
 ### イミュータビリティ（不変性）の重要性
@@ -642,15 +664,17 @@ setUser({ ...user, name: '太郎' });
 Reactでは、Stateを直接変更せず、**常に新しい値を作って更新**する必要があります。これを「イミュータビリティ（不変性）」と呼びます。
 
 **なぜイミュータビリティが必要か:**
+
 1. **正しい再レンダリング**: Reactは参照の変更で再レンダリングを判断する
 2. **履歴管理**: 過去の状態を保持できる（Undo/Redo機能）
 3. **パフォーマンス最適化**: 変更検出が高速
 4. **予測可能性**: 意図しない副作用を防ぐ
 
 **配列の不変更新パターン:**
+
 ```tsx
 function TodoList() {
-  const [items, setItems] = useState(['りんご', 'バナナ']);
+  const [items, setItems] = useState(["りんご", "バナナ"]);
 
   // ❌ 直接変更（pushは元の配列を変更する）
   const addItemBad = (item: string) => {
@@ -670,7 +694,7 @@ function TodoList() {
 
   // ✅ 更新：map で新しい配列を作る
   const updateItem = (index: number, newValue: string) => {
-    setItems(items.map((item, i) => i === index ? newValue : item));
+    setItems(items.map((item, i) => (i === index ? newValue : item)));
   };
 
   return <div>{/* ... */}</div>;
@@ -678,20 +702,21 @@ function TodoList() {
 ```
 
 **オブジェクトの不変更新パターン:**
+
 ```tsx
 function UserProfile() {
   const [user, setUser] = useState({
-    name: '太郎',
+    name: "太郎",
     age: 25,
     address: {
-      city: '東京',
-      zip: '100-0001'
-    }
+      city: "東京",
+      zip: "100-0001",
+    },
   });
 
   // ❌ 直接変更
   const updateNameBad = () => {
-    user.name = '花子';
+    user.name = "花子";
     setUser(user); // 参照が同じなので再レンダリングされない！
   };
 
@@ -706,8 +731,8 @@ function UserProfile() {
       ...user,
       address: {
         ...user.address,
-        city
-      }
+        city,
+      },
     });
   };
 
@@ -716,10 +741,11 @@ function UserProfile() {
 ```
 
 **便利な不変更新ヘルパー:**
+
 ```tsx
 // 配列の特定要素を更新
 const updateAtIndex = (array: T[], index: number, newValue: T) => {
-  return array.map((item, i) => i === index ? newValue : item);
+  return array.map((item, i) => (i === index ? newValue : item));
 };
 
 // 配列から特定要素を削除
@@ -751,7 +777,7 @@ function TodoList() {
 
   // 配列を更新
   const updateTodo = (index: number, newTodo: string) => {
-    setTodos(todos.map((todo, i) => i === index ? newTodo : todo));
+    setTodos(todos.map((todo, i) => (i === index ? newTodo : todo)));
   };
 
   return <div>{/* ... */}</div>;
@@ -773,15 +799,15 @@ function MemoDeletModal() {
       {isOpen && (
         <div className="modal">
           <p>本当に削除しますか？</p>
-          <button onClick={() => {
-            // 削除処理
-            setIsOpen(false);
-          }}>
+          <button
+            onClick={() => {
+              // 削除処理
+              setIsOpen(false);
+            }}
+          >
             はい
           </button>
-          <button onClick={() => setIsOpen(false)}>
-            いいえ
-          </button>
+          <button onClick={() => setIsOpen(false)}>いいえ</button>
         </div>
       )}
     </>
@@ -803,21 +829,19 @@ function ConfirmDialog() {
 
   return (
     <>
-      <button onClick={() => setIsOpen(true)}>
-        確認ダイアログを開く
-      </button>
+      <button onClick={() => setIsOpen(true)}>確認ダイアログを開く</button>
 
       {isOpen && (
         <div className="modal">
           <p>この操作を実行しますか？</p>
-          <button onClick={() => setIsOpen(false)}>
-            キャンセル
-          </button>
-          <button onClick={() => {
-            // 何か処理を実行
-            console.log('実行されました');
-            setIsOpen(false);
-          }}>
+          <button onClick={() => setIsOpen(false)}>キャンセル</button>
+          <button
+            onClick={() => {
+              // 何か処理を実行
+              console.log("実行されました");
+              setIsOpen(false);
+            }}
+          >
             実行
           </button>
         </div>
@@ -828,6 +852,7 @@ function ConfirmDialog() {
 ```
 
 **ポイント:**
+
 - `isOpen` という boolean のStateで開閉を管理
 - `isOpen && <Modal>` で条件付きレンダリング
 - `true` の時だけモーダルが表示される
@@ -853,12 +878,8 @@ function DeleteModal({ item, onClose, onConfirm }: DeleteModalProps) {
         <h2>アイテムの削除</h2>
         <p>{item.name} を削除しますか？</p>
         <div className="modal-buttons">
-          <button onClick={onClose}>
-            キャンセル
-          </button>
-          <button onClick={onConfirm}>
-            削除
-          </button>
+          <button onClick={onClose}>キャンセル</button>
+          <button onClick={onConfirm}>削除</button>
         </div>
       </div>
     </div>
@@ -867,7 +888,10 @@ function DeleteModal({ item, onClose, onConfirm }: DeleteModalProps) {
 
 // 使う側のコンポーネント
 function ItemList() {
-  const [deletingItem, setDeletingItem] = useState<{ id: number; name: string } | null>(null);
+  const [deletingItem, setDeletingItem] = useState<{
+    id: number;
+    name: string;
+  } | null>(null);
 
   const handleDelete = () => {
     if (deletingItem) {
@@ -879,10 +903,10 @@ function ItemList() {
 
   return (
     <div>
-      <button onClick={() => setDeletingItem({ id: 1, name: 'アイテム1' })}>
+      <button onClick={() => setDeletingItem({ id: 1, name: "アイテム1" })}>
         アイテム1を削除
       </button>
-      <button onClick={() => setDeletingItem({ id: 2, name: 'アイテム2' })}>
+      <button onClick={() => setDeletingItem({ id: 2, name: "アイテム2" })}>
         アイテム2を削除
       </button>
 
@@ -900,13 +924,17 @@ function ItemList() {
 ```
 
 **ポイント:**
+
 - `deletingItem` を `null` または `オブジェクト` で管理
   - `null` → モーダル非表示
   - `オブジェクト` → モーダル表示 + データを保持
 - **条件付きレンダリングの仕組み:**
   ```tsx
-  {deletingItem && <Modal item={deletingItem} />}
+  {
+    deletingItem && <Modal item={deletingItem} />;
+  }
   ```
+
   - `deletingItem` が `null` → falsy → 何も表示されない
   - `deletingItem` が `オブジェクト` → truthy → `<Modal>` が表示される
 - `onClick={(e) => e.stopPropagation()}` でモーダル内クリックが背景に伝わらない
@@ -918,7 +946,7 @@ function ItemList() {
 **解決：FormのonSubmitイベントでonCloseを呼ぶ**
 
 ```tsx
-import { Form } from 'react-router';
+import { Form } from "react-router";
 
 type DeleteModalProps = {
   item: { id: number; name: string };
@@ -938,9 +966,7 @@ function DeleteModal({ item, onClose }: DeleteModalProps) {
           <button type="button" onClick={onClose}>
             キャンセル
           </button>
-          <button type="submit">
-            削除
-          </button>
+          <button type="submit">削除</button>
         </Form>
       </div>
     </div>
@@ -949,6 +975,7 @@ function DeleteModal({ item, onClose }: DeleteModalProps) {
 ```
 
 **ポイント:**
+
 - **Form送信の流れ:**
   1. ユーザーが削除ボタンをクリック
   2. `onSubmit`イベントが発火 → `onClose()`が実行される → **モーダルが閉じる**
@@ -991,11 +1018,13 @@ function Modal({ onClose }: { onClose: () => void }) {
 ```
 
 **イベント伝播の仕組み:**
+
 1. モーダル内部をクリック → `onClick={(e) => e.stopPropagation()}` でイベント伝播を止める
 2. イベントが親（背景オーバーレイ）に伝わらない → `onClose` は呼ばれない
 3. 背景をクリック → 直接 `onClick={onClose}` が呼ばれる → モーダルが閉じる
 
 **まとめ:**
+
 - モーダルの開閉は `useState` で管理
 - `null` または `オブジェクト` で状態を管理すると、データも一緒に保持できる
 - 条件付きレンダリング `{state && <Modal>}` で表示/非表示を切り替え
@@ -1022,11 +1051,11 @@ Stateで値を管理できるようになりましたが、コンポーネント
 ### useEffectの基本
 
 ```tsx
-import { useEffect } from 'react';
+import { useEffect } from "react";
 
 function Example() {
   useEffect(() => {
-    console.log('コンポーネントがレンダリングされました');
+    console.log("コンポーネントがレンダリングされました");
   });
 
   return <div>Example</div>;
@@ -1042,8 +1071,8 @@ function UserProfile({ userId }: { userId: number }) {
   useEffect(() => {
     // userIdが変わるたびに実行される
     fetch(`/api/users/${userId}`)
-      .then(res => res.json())
-      .then(data => setUser(data));
+      .then((res) => res.json())
+      .then((data) => setUser(data));
   }, [userId]); // 依存配列
 
   return <div>{user?.name}</div>;
@@ -1055,12 +1084,12 @@ function UserProfile({ userId }: { userId: number }) {
 ```tsx
 // 1. 依存配列なし：毎回のレンダリング後に実行（通常は避ける）
 useEffect(() => {
-  console.log('毎回実行される');
+  console.log("毎回実行される");
 });
 
 // 2. 空の依存配列：マウント時のみ実行
 useEffect(() => {
-  console.log('最初の1回だけ実行される');
+  console.log("最初の1回だけ実行される");
 }, []);
 
 // 3. 値を指定：その値が変わった時のみ実行
@@ -1080,7 +1109,7 @@ function Timer() {
   useEffect(() => {
     // タイマーを設定
     const timer = setInterval(() => {
-      setCount(c => c + 1);
+      setCount((c) => c + 1);
     }, 1000);
 
     // クリーンアップ関数：コンポーネントがアンマウントされる時に実行
@@ -1096,6 +1125,7 @@ function Timer() {
 ### 実用例
 
 **1. ドキュメントタイトルの変更**
+
 ```tsx
 function MemoDetail({ memo }: { memo: Memo }) {
   useEffect(() => {
@@ -1103,7 +1133,7 @@ function MemoDetail({ memo }: { memo: Memo }) {
 
     // クリーンアップ：元に戻す
     return () => {
-      document.title = 'メモアプリ';
+      document.title = "メモアプリ";
     };
   }, [memo.title]);
 
@@ -1112,20 +1142,21 @@ function MemoDetail({ memo }: { memo: Memo }) {
 ```
 
 **2. ローカルストレージとの同期**
+
 ```tsx
 function Settings() {
   const [theme, setTheme] = useState(() => {
     // 初期値をlocalStorageから取得
-    return localStorage.getItem('theme') || 'light';
+    return localStorage.getItem("theme") || "light";
   });
 
   useEffect(() => {
     // themeが変わるたびにlocalStorageに保存
-    localStorage.setItem('theme', theme);
+    localStorage.setItem("theme", theme);
   }, [theme]);
 
   return (
-    <select value={theme} onChange={e => setTheme(e.target.value)}>
+    <select value={theme} onChange={(e) => setTheme(e.target.value)}>
       <option value="light">ライト</option>
       <option value="dark">ダーク</option>
     </select>
@@ -1134,6 +1165,7 @@ function Settings() {
 ```
 
 **3. イベントリスナーの登録**
+
 ```tsx
 function WindowSize() {
   const [width, setWidth] = useState(window.innerWidth);
@@ -1144,11 +1176,11 @@ function WindowSize() {
     };
 
     // イベントリスナーを登録
-    window.addEventListener('resize', handleResize);
+    window.addEventListener("resize", handleResize);
 
     // クリーンアップ：イベントリスナーを削除
     return () => {
-      window.removeEventListener('resize', handleResize);
+      window.removeEventListener("resize", handleResize);
     };
   }, []);
 
@@ -1174,7 +1206,7 @@ function SearchForm({ initialQuery }: { initialQuery: string }) {
 useEffectを使って、依存する値が変わった時にDOMを直接更新します。
 
 ```tsx
-import { useEffect } from 'react';
+import { useEffect } from "react";
 
 function SearchForm({ query }: { query: string | null }) {
   useEffect(() => {
@@ -1189,6 +1221,7 @@ function SearchForm({ query }: { query: string | null }) {
 ```
 
 **使用例：検索フォームとブラウザバック**
+
 - ユーザーが検索して別ページに移動
 - ブラウザの「戻る」ボタンで検索ページに戻る
 - URLパラメータは更新されるが、`defaultValue`だけでは入力欄が更新されない
@@ -1197,17 +1230,20 @@ function SearchForm({ query }: { query: string | null }) {
 ### useEffectを使うべき場面・避けるべき場面
 
 **使うべき場面:**
+
 - **DOM操作**: ブラウザAPIを直接使う必要がある時
 - **タイマー**: setInterval、setTimeoutの設定・クリーンアップ
 - **グローバルイベント**: window.addEventListener など
 - **外部ライブラリの初期化**: チャートライブラリ、地図ライブラリなど
 
 **避けるべき場面:**
+
 - **データ取得**: React RouterのloaderやReact Queryを使う（詳しくは後述）
 - **状態管理**: useStateで十分
 - **計算処理**: useMemoやuseMemo不要な単純な計算
 
 **まとめ:**
+
 - useEffectは「副作用」（レンダリング以外の処理）を明示的に分離するためのもの
 - 依存配列でパフォーマンス最適化や無限ループ防止
 - データ取得や状態管理はより適切な手段を優先
@@ -1215,6 +1251,7 @@ function SearchForm({ query }: { query: string | null }) {
 ### 注意：React Router v7ではuseEffectでデータフェッチしない
 
 **従来の方法（useEffectでAPI呼び出し）:**
+
 ```tsx
 // ❌ React Router v7では非推奨
 function MemoList() {
@@ -1222,9 +1259,9 @@ function MemoList() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch('/api/memos')
-      .then(res => res.json())
-      .then(data => {
+    fetch("/api/memos")
+      .then((res) => res.json())
+      .then((data) => {
         setMemos(data);
         setLoading(false);
       });
@@ -1236,10 +1273,11 @@ function MemoList() {
 ```
 
 **React Router v7の方法（loader関数）:**
+
 ```tsx
 // ✅ React Router v7ではloader関数を使う
 export async function loader() {
-  const memos = await fetch('/api/memos').then(res => res.json());
+  const memos = await fetch("/api/memos").then((res) => res.json());
   return { memos };
 }
 
@@ -1273,7 +1311,13 @@ export function ErrorBoundary() {
   // エラー表示コンポーネント
 }
 
-export function DeleteModal({ memo, onClose }: { memo: Memo; onClose: () => void }) {
+export function DeleteModal({
+  memo,
+  onClose,
+}: {
+  memo: Memo;
+  onClose: () => void;
+}) {
   // モーダルコンポーネント
 }
 
@@ -1285,6 +1329,7 @@ export function ConfirmDialog({ message, onConfirm }: ConfirmDialogProps) {
 ```
 
 **問題点:**
+
 - ファイルが長すぎて読みにくい
 - 特定のコンポーネントを探しにくい
 - 複数人で同じファイルを編集すると競合しやすい
@@ -1303,7 +1348,13 @@ export function ErrorBoundary() {
 }
 
 // app/components/DeleteModal.tsx（分離）
-export function DeleteModal({ memo, onClose }: { memo: Memo; onClose: () => void }) {
+export function DeleteModal({
+  memo,
+  onClose,
+}: {
+  memo: Memo;
+  onClose: () => void;
+}) {
   // モーダルコンポーネント
 }
 
@@ -1314,6 +1365,7 @@ export function ConfirmDialog({ message, onConfirm }: ConfirmDialogProps) {
 ```
 
 **メリット:**
+
 - **単一責任の原則**: 1ファイル1コンポーネント（または関連する小さなコンポーネント群）
 - **見通しが良い**: ファイル構造を見れば、どんなコンポーネントがあるか一目瞭然
 - **再利用しやすい**: 必要なコンポーネントだけインポートできる
@@ -1342,14 +1394,14 @@ app/
 
 **各ディレクトリの役割:**
 
-| ディレクトリ | 役割 | 配置するもの |
-|------------|------|------------|
-| `routes/` | ページコンポーネント | URLに対応するページ全体（loader/action含む） |
-| `components/` | 再利用可能なUI部品 | ボタン、モーダル、カードなど汎用コンポーネント |
-| `api/` | バックエンド通信 | fetch関数、API呼び出しロジック |
-| `layouts/` | レイアウトコンポーネント | サイドバー、ヘッダーなど共通レイアウト |
-| `hooks/` | カスタムフック | 再利用可能なロジック（useState/useEffectを使う） |
-| `utils/` | ユーティリティ関数 | 日付フォーマット、バリデーションなど |
+| ディレクトリ  | 役割                     | 配置するもの                                     |
+| ------------- | ------------------------ | ------------------------------------------------ |
+| `routes/`     | ページコンポーネント     | URLに対応するページ全体（loader/action含む）     |
+| `components/` | 再利用可能なUI部品       | ボタン、モーダル、カードなど汎用コンポーネント   |
+| `api/`        | バックエンド通信         | fetch関数、API呼び出しロジック                   |
+| `layouts/`    | レイアウトコンポーネント | サイドバー、ヘッダーなど共通レイアウト           |
+| `hooks/`      | カスタムフック           | 再利用可能なロジック（useState/useEffectを使う） |
+| `utils/`      | ユーティリティ関数       | 日付フォーマット、バリデーションなど             |
 
 ### コンポーネントの分離：実例
 
@@ -1357,7 +1409,13 @@ app/
 
 ```tsx
 // app/root.tsx
-export function DeleteModal({ memo, onClose }: { memo: Memo; onClose: () => void }) {
+export function DeleteModal({
+  memo,
+  onClose,
+}: {
+  memo: Memo;
+  onClose: () => void;
+}) {
   return (
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal-content" onClick={(e) => e.stopPropagation()}>
@@ -1365,7 +1423,9 @@ export function DeleteModal({ memo, onClose }: { memo: Memo; onClose: () => void
         <p>本当にこのメモを削除しますか？</p>
         <Form method="post" action="/memos/delete" onSubmit={onClose}>
           <input type="hidden" name="id" value={memo.id} />
-          <button type="button" onClick={onClose}>キャンセル</button>
+          <button type="button" onClick={onClose}>
+            キャンセル
+          </button>
           <button type="submit">削除</button>
         </Form>
       </div>
@@ -1384,7 +1444,13 @@ import { DeleteModal } from "~/root"; // root.tsxからインポート
 import { Form } from "react-router";
 import type { Memo } from "~/api/memos";
 
-export function DeleteModal({ memo, onClose }: { memo: Memo; onClose: () => void }) {
+export function DeleteModal({
+  memo,
+  onClose,
+}: {
+  memo: Memo;
+  onClose: () => void;
+}) {
   return (
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal-content" onClick={(e) => e.stopPropagation()}>
@@ -1392,7 +1458,9 @@ export function DeleteModal({ memo, onClose }: { memo: Memo; onClose: () => void
         <p>本当にこのメモを削除しますか？</p>
         <Form method="post" action="/memos/delete" onSubmit={onClose}>
           <input type="hidden" name="id" value={memo.id} />
-          <button type="button" onClick={onClose}>キャンセル</button>
+          <button type="button" onClick={onClose}>
+            キャンセル
+          </button>
           <button type="submit">削除</button>
         </Form>
       </div>
@@ -1410,6 +1478,7 @@ import { DeleteModal } from "~/components/DeleteModal";
 ```
 
 **変更点:**
+
 1. `components/`ディレクトリを作成
 2. `DeleteModal`を`components/DeleteModal.tsx`に移動
 3. 必要なインポート（Form, Memo型）を追加
@@ -1446,13 +1515,13 @@ import { getMemos } from "~/api/memos";
 
 **いつコンポーネントを分離すべきか:**
 
-| 状況 | 分離すべきか | 理由 |
-|------|------------|------|
-| 複数の場所で使う | ✅ する | 再利用性が高まる |
-| 50行以上の長いコンポーネント | ✅ する | 可読性が向上する |
-| 独立したUI要素（モーダル、ボタンなど） | ✅ する | 単一責任の原則 |
-| 1箇所でしか使わない小さなコンポーネント | ❌ しない | 過度な分離は逆に複雑化 |
-| 親コンポーネントと強く結合している | ❌ しない | 分離しても再利用できない |
+| 状況                                    | 分離すべきか | 理由                     |
+| --------------------------------------- | ------------ | ------------------------ |
+| 複数の場所で使う                        | ✅ する      | 再利用性が高まる         |
+| 50行以上の長いコンポーネント            | ✅ する      | 可読性が向上する         |
+| 独立したUI要素（モーダル、ボタンなど）  | ✅ する      | 単一責任の原則           |
+| 1箇所でしか使わない小さなコンポーネント | ❌ しない    | 過度な分離は逆に複雑化   |
+| 親コンポーネントと強く結合している      | ❌ しない    | 分離しても再利用できない |
 
 **例：モーダルコンポーネント**
 
@@ -1481,6 +1550,7 @@ function MemoListHeader() {
 プロジェクトの成長に応じて、段階的にファイル構造を整理します。
 
 **ステップ1: すべて1ファイル（学習初期）**
+
 ```
 app/
 └── routes/
@@ -1488,6 +1558,7 @@ app/
 ```
 
 **ステップ2: コンポーネントを分離**
+
 ```
 app/
 ├── routes/
@@ -1497,6 +1568,7 @@ app/
 ```
 
 **ステップ3: API通信を分離**
+
 ```
 app/
 ├── routes/
@@ -1508,6 +1580,7 @@ app/
 ```
 
 **ステップ4: さらに細分化（大規模プロジェクト）**
+
 ```
 app/
 ├── routes/
@@ -1545,6 +1618,7 @@ Reactアプリの開発には、いくつかのツールやファイルが関わ
 ### package.json と package-lock.json
 
 **package.json** - プロジェクトの設計図
+
 ```json
 {
   "name": "my-app",
@@ -1571,6 +1645,7 @@ Reactアプリの開発には、いくつかのツールやファイルが関わ
 - チーム全員が同じバージョンを使うために重要
 
 **例え:**
+
 - package.json = 「レシピ」（材料と手順）
 - package-lock.json = 「実際に使った材料の記録」（ブランド、ロット番号まで記録）
 
@@ -1579,25 +1654,28 @@ Reactアプリの開発には、いくつかのツールやファイルが関わ
 Reactプロジェクトには、用途別に複数のコマンドがあります。
 
 **典型的なコマンド:**
+
 ```json
 {
   "scripts": {
-    "dev": "vite",              // 開発サーバー起動
-    "build": "vite build",      // 本番用ビルド
-    "start": "vite preview",    // ビルド結果をプレビュー
-    "typecheck": "tsc",         // 型チェック
-    "lint": "eslint ."          // コード品質チェック
+    "dev": "vite", // 開発サーバー起動
+    "build": "vite build", // 本番用ビルド
+    "start": "vite preview", // ビルド結果をプレビュー
+    "typecheck": "tsc", // 型チェック
+    "lint": "eslint ." // コード品質チェック
   }
 }
 ```
 
 **なぜ複数あるのか:**
+
 1. **開発用と本番用の違い**: 開発時は高速なホットリロード、本番は最適化されたファイル
 2. **ビルドツール**: Vite、Webpackなどツール固有のコマンド
 3. **React Router独自**: React Router v7は独自のビルドシステムを持つ
 4. **品質管理**: 型チェック、リント、テストなど複数のツール
 
 **それぞれの役割:**
+
 - `npm run dev`: 開発中に使う（ホットリロード付き）
 - `npm run build`: デプロイ前に本番用ファイルを生成
 - `npm run start`: ビルド結果をローカルで確認
@@ -1607,15 +1685,18 @@ Reactプロジェクトには、用途別に複数のコマンドがあります
 **Vite**は、Reactなどのフロントエンド開発で使われる「開発サーバー」と「ビルドツール」です。
 
 **Viteの役割:**
+
 1. **開発サーバー**: コードを変更すると即座にブラウザに反映（ホットリロード）
 2. **ビルドツール**: 本番用に最適化されたファイルを生成
 
 **Viteの特徴:**
+
 - **超高速な起動**: 従来のツール（Webpack）より圧倒的に速い
 - **高速なホットリロード**: ファイル保存から反映まで瞬時
 - **モダンな技術**: ES Modulesを活用
 
 **Viteは必要か:**
+
 - 小規模・学習用なら無しでもReactは動く（CDNでReactを読み込むなど）
 - しかし、実際の開発では以下の理由でViteが推奨される：
   - TypeScriptのコンパイル
@@ -1641,11 +1722,13 @@ Reactアプリには、レンダリング方法によって2つのアプロー�
 ```
 
 **メリット:**
+
 - インタラクティブ性が高い（SPA）
 - サーバー負荷が低い
 - PWA（オフライン対応）に向いている
 
 **デメリット:**
+
 - 初期表示が遅い（JavaScriptのダウンロード・実行が必要）
 - SEOに弱い（検索エンジンがJavaScript実行前のHTMLを見る）
 
@@ -1664,24 +1747,27 @@ Reactアプリには、レンダリング方法によって2つのアプロー�
 ```
 
 **メリット:**
+
 - 初期表示が速い（HTMLがすでに完成している）
 - SEOに強い（検索エンジンが内容を読める）
 - アクセシビリティに有利
 
 **デメリット:**
+
 - サーバー負荷が高い（毎回HTMLを生成）
 - 実装が複雑になる
 
 **使い分けの基準:**
 
-| 用途 | 推奨 | 理由 |
-|------|------|------|
-| 管理画面 | CSR | SEO不要、インタラクティブ性重視 |
-| ブログ・コンテンツサイト | SSR | SEO重要、初期表示速度重視 |
-| ECサイト | SSR or ハイブリッド | SEOと速度の両立 |
-| リアルタイムアプリ | CSR | インタラクション重視 |
+| 用途                     | 推奨                | 理由                            |
+| ------------------------ | ------------------- | ------------------------------- |
+| 管理画面                 | CSR                 | SEO不要、インタラクティブ性重視 |
+| ブログ・コンテンツサイト | SSR                 | SEO重要、初期表示速度重視       |
+| ECサイト                 | SSR or ハイブリッド | SEOと速度の両立                 |
+| リアルタイムアプリ       | CSR                 | インタラクション重視            |
 
 **ハイブリッドアプローチ:**
+
 - **SSG（Static Site Generation）**: ビルド時にHTMLを生成（Next.jsなど）
 - **ISR（Incremental Static Regeneration）**: 一定時間ごとに静的HTMLを再生成
 - **Hydration**: SSRで生成したHTMLに、クライアント側でイベントハンドラを追加
