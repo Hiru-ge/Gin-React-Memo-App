@@ -26,8 +26,19 @@ export default function MemoEdit({loaderData}: Route.ComponentProps) {
           メモ編集
         </h1>
         <Form method="put" className="space-y-6">
-            <input name="title" defaultValue={memo.title} className="w-full px-3 py-2 border border-gray-300 rounded-md" />
-            <textarea name="content" defaultValue={memo.content} className="w-full px-3 py-2 border border-gray-300 rounded-md h-64"></textarea>
+            <div>
+              <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-2">
+                タイトル
+              </label>
+              <input id="title" name="title" type="text" required placeholder="メモのタイトルを入力してください" defaultValue={memo.title} className="w-full px-3 py-2 border border-gray-300 rounded-md"/>
+            </div>
+            <div>
+              <label htmlFor="content" className="block text-sm font-medium text-gray-700 mb-2">
+                内容
+              </label>
+              <textarea id="content" name="content" required placeholder="メモの内容を入力してください" defaultValue={memo.content} className="w-full px-3 py-2 border border-gray-300 rounded-md h-64">
+              </textarea>
+            </div>
             <div className="flex space-x-4">
                 <button type="submit" className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600">
                     保存
