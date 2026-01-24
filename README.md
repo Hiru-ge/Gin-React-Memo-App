@@ -6,12 +6,14 @@ RESTful API の設計と実装、およびフロントエンドとの非同期�
 ## 技術スタック
 
 ### Backend
+
 - **Language**: Go
 - **Framework**: Gin Web Framework
 - **Database Driver**: database/sql + go-sql-driver/mysql
 - **Database**: MySQL 8.0
 
 ### Frontend
+
 - **Library**: React
 - **Language**: TypeScript
 - **Build Tool**: Vite
@@ -25,14 +27,15 @@ RESTful API の設計と実装、およびフロントエンドとの非同期�
 データベース名: `memo_app`
 
 ### `memos` テーブル
+
 メモの本体を保存するテーブルです。
 
-| Column Name | Type | Key | Note |
-| :--- | :--- | :--- | :--- |
-| `id` | BIGINT | PK | AUTO_INCREMENT |
-| `title` | VARCHAR(255) | | メモのタイトル (Not Null) |
-| `content` | TEXT | | メモの本文 |
-| `created_at` | DATETIME | | 作成日時 (Default: CURRENT_TIMESTAMP) |
+| Column Name  | Type         | Key | Note                                  |
+| :----------- | :----------- | :-- | :------------------------------------ |
+| `id`         | BIGINT       | PK  | AUTO_INCREMENT                        |
+| `title`      | VARCHAR(255) |     | メモのタイトル (Not Null)             |
+| `content`    | TEXT         |     | メモの本文                            |
+| `created_at` | DATETIME     |     | 作成日時 (Default: CURRENT_TIMESTAMP) |
 
 ```sql
 -- 初期化用SQL

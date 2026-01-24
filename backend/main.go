@@ -1,7 +1,7 @@
 package main
 
 import (
-	_ "backend-API/docs"
+	_ "backend/docs"
 	"database/sql"
 	"fmt"
 	"log"
@@ -33,25 +33,33 @@ type HTTPError struct {
 	Message string `json:"message" example:"Bad Request"`
 }
 
-func getAllMemos(db *sql.DB) ([]Memo, error) {
+// respondError はHTTPErrorを使用してエラーレスポンスを返すヘルパー関数です
+func respondError(c *gin.Context, code int, message string) {
+	c.IndentedJSON(code, HTTPError{
+		Code:    code,
+		Message: message,
+	})
+}
+
+func getMemos(db *sql.DB) ([]Memo, error) {
 	var memos []Memo
 
 	rows, err := db.Query("SELECT id, title, content, created_at FROM memos")
 	if err != nil {
-		return nil, fmt.Errorf("getAllMemos : %v", err)
+		return nil, fmt.Errorf("getMemos: %v", err)
 	}
 	defer rows.Close()
 
 	for rows.Next() {
 		var memo Memo
 		if err := rows.Scan(&memo.ID, &memo.Title, &memo.Content, &memo.CreatedAt); err != nil {
-			return nil, fmt.Errorf("getAllMemos : %v", err)
+			return nil, fmt.Errorf("getMemos: %v", err)
 		}
 		memos = append(memos, memo)
 	}
 
 	if err := rows.Err(); err != nil {
-		return nil, fmt.Errorf("getAllMemos : %v", err)
+		return nil, fmt.Errorf("getMemos: %v", err)
 	}
 	return memos, nil
 }
@@ -69,32 +77,35 @@ func getMemoByID(db *sql.DB, id int64) (Memo, error) {
 	return memo, nil
 }
 
-func addMemo(db *sql.DB, memo Memo) (Memo, error) {
-	result, err := db.Exec("INSERT INTO memos (title, content) VALUES (?, ?)", memo.Title, memo.Content)
+func createMemo(db *sql.DB, memo Memo) (Memo, error) {
+	createdAt := time.Now()
+	result, err := db.Exec("INSERT INTO memos (title, content, created_at) VALUES (?, ?, ?)", memo.Title, memo.Content, createdAt)
 	if err != nil {
-		return Memo{}, fmt.Errorf("addMemo: %v", err)
+		return Memo{}, fmt.Errorf("createMemo: %v", err)
 	}
 
 	id, err := result.LastInsertId()
 	if err != nil {
-		return Memo{}, fmt.Errorf("addMemo: %v", err)
+		return Memo{}, fmt.Errorf("createMemo: %v", err)
 	}
-	newMemo, err := getMemoByID(db, id)
-	if err != nil {
-		return Memo{}, fmt.Errorf("addMemo: %v", err)
-	}
-	return newMemo, nil
+
+	return Memo{
+		ID:        id,
+		Title:     memo.Title,
+		Content:   memo.Content,
+		CreatedAt: createdAt,
+	}, nil
 }
 
-func editMemo(db *sql.DB, memo Memo) (Memo, error) {
+func updateMemo(db *sql.DB, memo Memo) (Memo, error) {
 	result, err := db.Exec("UPDATE memos SET title = ?, content = ? WHERE id = ?", memo.Title, memo.Content, memo.ID)
 	if err != nil {
-		return Memo{}, fmt.Errorf("editMemo: %v", err)
+		return Memo{}, fmt.Errorf("updateMemo: %v", err)
 	}
 
 	rows, err := result.RowsAffected()
 	if err != nil {
-		return Memo{}, fmt.Errorf("editMemo: %v", err)
+		return Memo{}, fmt.Errorf("updateMemo: %v", err)
 	}
 	if rows == 0 {
 		// 変更行が0でも「変更前と同じ値で更新されたケース」があり得るので存在確認し、存在しない場合だけエラーを返す
@@ -102,11 +113,13 @@ func editMemo(db *sql.DB, memo Memo) (Memo, error) {
 			return Memo{}, sql.ErrNoRows
 		}
 	}
-	editedMemo, err := getMemoByID(db, memo.ID)
+
+	// getMemoByIDによるDB呼び出しが発生するので、createMemoに倣ってDB呼び出し削減しても良いのだが、現状パフォーマンスはそこまでシビアな要件ではないので可読性を優先
+	updatedMemo, err := getMemoByID(db, memo.ID)
 	if err != nil {
-		return Memo{}, fmt.Errorf("editMemo: %v", err)
+		return Memo{}, fmt.Errorf("updateMemo: %v", err)
 	}
-	return editedMemo, nil
+	return updatedMemo, nil
 }
 
 func deleteMemoByID(db *sql.DB, id int64) error {
@@ -125,7 +138,7 @@ func deleteMemoByID(db *sql.DB, id int64) error {
 	return nil
 }
 
-// GetAllMemos godoc
+// getMemosHandler godoc
 // @Summary      メモ一覧取得
 // @Description  全てのメモを取得します
 // @Tags         memos
@@ -133,17 +146,17 @@ func deleteMemoByID(db *sql.DB, id int64) error {
 // @Produce      json
 // @Success      200  {array}  Memo
 // @Router       /memos [get]
-func (s *Server) getAllMemosHandler(c *gin.Context) {
-	memos, err := getAllMemos(s.db)
+func (s *Server) getMemosHandler(c *gin.Context) {
+	memos, err := getMemos(s.db)
 	if err != nil {
-		c.IndentedJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		respondError(c, http.StatusInternalServerError, err.Error())
 		return
 	}
 
 	c.IndentedJSON(http.StatusOK, memos)
 }
 
-// GetMemoByID godoc
+// getMemoByIDHandler godoc
 // @Summary      メモ詳細取得
 // @Description  IDを指定して特定のメモを取得します
 // @Tags         memos
@@ -161,13 +174,13 @@ func (s *Server) getMemoByIDHandler(c *gin.Context) {
 	}
 	memo, err := getMemoByID(s.db, id)
 	if err != nil {
-		c.IndentedJSON(http.StatusNotFound, gin.H{"error": "Memo not found"})
+		respondError(c, http.StatusNotFound, "Memo not found")
 		return
 	}
 	c.IndentedJSON(http.StatusOK, memo)
 }
 
-// AddMemo godoc
+// createMemoHandler godoc
 // @Summary      メモ新規作成
 // @Description  新しいメモを作成します
 // @Tags         memos
@@ -178,21 +191,21 @@ func (s *Server) getMemoByIDHandler(c *gin.Context) {
 // @Failure      400     {object}  HTTPError  "Invalid input"
 // @Failure      500     {object}  HTTPError  "Server error"
 // @Router       /memos [post]
-func (s *Server) addMemoHandler(c *gin.Context) {
+func (s *Server) createMemoHandler(c *gin.Context) {
 	var newMemo Memo
 	if err := c.BindJSON(&newMemo); err != nil {
-		c.IndentedJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		respondError(c, http.StatusBadRequest, err.Error())
 		return
 	}
-	newMemo, err := addMemo(s.db, newMemo)
+	newMemo, err := createMemo(s.db, newMemo)
 	if err != nil {
-		c.IndentedJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		respondError(c, http.StatusInternalServerError, err.Error())
 		return
 	}
 	c.IndentedJSON(http.StatusCreated, newMemo)
 }
 
-// EditMemo godoc
+// updateMemoHandler godoc
 // @Summary      メモ編集
 // @Description  IDを指定してメモの内容を更新します
 // @Tags         memos
@@ -204,26 +217,26 @@ func (s *Server) addMemoHandler(c *gin.Context) {
 // @Failure      400     {object}  HTTPError  "Invalid input"
 // @Failure      500     {object}  HTTPError  "Server error"
 // @Router       /memos/{id} [put]
-func (s *Server) editMemoHandler(c *gin.Context) {
+func (s *Server) updateMemoHandler(c *gin.Context) {
 	id, ok := s.parseID(c)
 	if !ok {
 		return
 	}
 	var editedMemo Memo
 	if err := c.BindJSON(&editedMemo); err != nil {
-		c.IndentedJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		respondError(c, http.StatusBadRequest, err.Error())
 		return
 	}
 	editedMemo.ID = id
-	editedMemo, err := editMemo(s.db, editedMemo)
+	editedMemo, err := updateMemo(s.db, editedMemo)
 	if err != nil {
-		c.IndentedJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		respondError(c, http.StatusInternalServerError, err.Error())
 		return
 	}
 	c.IndentedJSON(http.StatusOK, editedMemo)
 }
 
-// DeleteMemoHandler godoc
+// deleteMemoHandler godoc
 // @Summary      メモ削除
 // @Description  IDを指定してメモを削除します
 // @Tags         memos
@@ -241,7 +254,7 @@ func (s *Server) deleteMemoHandler(c *gin.Context) {
 	}
 	err := deleteMemoByID(s.db, id)
 	if err != nil {
-		c.IndentedJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		respondError(c, http.StatusInternalServerError, err.Error())
 		return
 	}
 	c.Status(http.StatusNoContent)
@@ -251,7 +264,7 @@ func (s *Server) parseID(c *gin.Context) (int64, bool) {
 	idStr := c.Param("id")
 	id, err := strconv.ParseInt(idStr, 10, 64)
 	if err != nil {
-		c.IndentedJSON(http.StatusBadRequest, gin.H{"error": "Invalid ID format"})
+		respondError(c, http.StatusBadRequest, "Invalid ID format")
 		return 0, false
 	}
 	return id, true
@@ -287,10 +300,10 @@ func main() {
 	// ルーティング
 	server := &Server{db: db}
 	router := gin.Default()
-	router.GET("/memos", server.getAllMemosHandler)
+	router.GET("/memos", server.getMemosHandler)
 	router.GET("/memos/:id", server.getMemoByIDHandler)
-	router.POST("/memos", server.addMemoHandler)
-	router.PUT("/memos/:id", server.editMemoHandler)
+	router.POST("/memos", server.createMemoHandler)
+	router.PUT("/memos/:id", server.updateMemoHandler)
 	router.DELETE("/memos/:id", server.deleteMemoHandler)
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 	router.Run("localhost:8080")

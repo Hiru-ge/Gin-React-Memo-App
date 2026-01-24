@@ -7,6 +7,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 **This is a learning repository.** The user is learning web development through hands-on implementation.
 
 **What you SHOULD do:**
+
 - Explain concepts, patterns, and best practices
 - Answer questions about the code, architecture, or technologies
 - Help document learnings in the appropriate .md files (see below)
@@ -14,6 +15,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - Provide guidance on how to implement features when asked
 
 **What you SHOULD NOT do:**
+
 - DO NOT directly modify code unless explicitly requested by the user
 - DO NOT proactively implement features - the user wants to code themselves
 - The user learns by doing, so let them write the code
@@ -35,38 +37,45 @@ Always categorize learnings appropriately. If something involves multiple techno
 When writing or updating learning documentation, follow these principles:
 
 **1. Development Flow Structure**
+
 - Organize content following the natural development progression
 - Use "Problem → Solution" format to show why each concept is needed
 - Example flow: Static pages → Display data → User interaction → Dynamic values → External data
 
 **2. Show Necessity Before Implementation**
+
 - Always explain **why** a concept is needed before showing **how** to use it
 - Start each section with a problem statement
 - Make it clear what issue the concept solves
 
 **3. General and Reusable Examples**
+
 - Use "使用例" (usage examples) not "このプロジェクトでの例" (this project's example)
 - Write examples that can be applied to any project, not just the current one
 - Keep examples focused and minimal while still being realistic
 
 **4. Incremental Complexity**
+
 - Start with the simplest version of a concept
 - Gradually introduce more complex patterns
 - Show common pitfalls (❌ bad example) alongside correct approaches (✅ good example)
 
 **5. Comprehensive Coverage**
+
 - Include all essential information needed for future development
 - Add tables for quick reference (comparison tables, decision matrices)
 - Cover edge cases and common scenarios
 - Include best practices and common patterns
 
 **6. Code Examples Best Practices**
+
 - Always include type annotations (TypeScript)
 - Show both basic and advanced usage
 - Use realistic variable names and scenarios
 - Add comments only where the logic isn't self-evident
 
 **7. Consistency in Formatting**
+
 - Use consistent heading levels (## for main topics, ### for subtopics)
 - Keep code blocks properly formatted with language tags
 - Use tables for comparisons and structured information
@@ -77,6 +86,7 @@ When writing or updating learning documentation, follow these principles:
 A simple memo application built as a learning project for RESTful API design and SPA architecture. The backend uses Go with Gin framework, and the frontend uses React with TypeScript and React Router v7.
 
 **Tech Stack:**
+
 - Backend: Go + Gin Web Framework + MySQL 8.0
 - Frontend: React 19 + TypeScript + React Router v7 + Vite + Tailwind CSS v4
 
@@ -85,22 +95,24 @@ A simple memo application built as a learning project for RESTful API design and
 **Database Name:** `memo_app`
 
 **Table:** `memos`
+
 - `id` (BIGINT, PK, AUTO_INCREMENT)
 - `title` (VARCHAR(255), NOT NULL)
 - `content` (TEXT)
 - `created_at` (DATETIME, DEFAULT CURRENT_TIMESTAMP)
 
 **Environment Variables Required:**
+
 - `DBUSER`: MySQL username
 - `DBPASS`: MySQL password
 
-Database connection is configured in backend-API/main.go:266-272 to connect to `127.0.0.1:3306`.
+Database connection is configured in backend/main.go:266-272 to connect to `127.0.0.1:3306`.
 
 ## Development Commands
 
 ### Backend (Go/Gin)
 
-Navigate to `backend-API/` directory first:
+Navigate to `backend/` directory first:
 
 ```bash
 # Run the API server
@@ -116,6 +128,7 @@ go mod download
 The backend server runs on `http://localhost:8080`.
 
 **API Endpoints:**
+
 - `GET /memos` - Get all memos
 - `GET /memos/:id` - Get memo by ID
 - `POST /memos` - Create new memo
@@ -145,7 +158,7 @@ The frontend dev server typically runs on `http://localhost:5173`.
 
 ## Architecture
 
-### Backend Architecture (backend-API/)
+### Backend Architecture (backend/)
 
 **Single-file architecture:** All backend logic is in `main.go` (~300 lines).
 
@@ -161,17 +174,20 @@ Database connection uses `database/sql` with `go-sql-driver/mysql`. The `Server`
 **React Router v7 file-based routing:**
 
 Routes are defined in `app/routes.ts`:
+
 - `/` → `routes/index.tsx` (memo list page)
 - `/memos/:id` → `routes/memo.tsx` (memo detail page)
 - `/memos/:id/edit` → `routes/edit_memo.tsx` (memo edit page)
 
 **Data fetching pattern:**
+
 - API client functions in `app/api/memos.ts` handle all backend communication
 - Route components use `loader()` functions for data fetching (React Router v7 pattern)
 - Route components use `action()` functions for mutations (React Router v7 pattern)
 - All API calls target `http://localhost:8080`
 
 **Component pattern:**
+
 - Each route file exports: `loader()` (for data fetching), `action()` (for mutations), and default component
 - Type safety with `Route.ComponentProps`, `Route.LoaderArgs`, `Route.ActionArgs`
 - Uses React Router's `Form` component for mutations with automatic revalidation
@@ -181,6 +197,7 @@ Routes are defined in `app/routes.ts`:
 ## Current Implementation Status
 
 **Implemented:**
+
 - Memo list view with cards (index page)
 - Memo detail view with back button
 - Memo edit functionality with form submission
@@ -188,6 +205,7 @@ Routes are defined in `app/routes.ts`:
 - Responsive layout with Tailwind
 
 **Not Yet Implemented:**
+
 - Delete memo functionality (buttons exist but have no onClick handler)
 - Create new memo functionality
 - Error handling in frontend
