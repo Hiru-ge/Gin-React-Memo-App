@@ -28,6 +28,11 @@ type Memo struct {
 	CreatedAt time.Time `json:"created_at"`
 }
 
+type updateMemoRequest struct {
+	Title     string    `json:"title"`
+	Content   string    `json:"content"`
+}
+
 // エラーレスポンスの形を定義します
 type HTTPError struct {
 	Code    int    `json:"code" example:"400"`
@@ -98,8 +103,8 @@ func createMemo(db *sql.DB, memo Memo) (Memo, error) {
 	}, nil
 }
 
-func updateMemo(db *sql.DB, memo Memo) (Memo, error) {
-	result, err := db.Exec("UPDATE memos SET title = ?, content = ? WHERE id = ?", memo.Title, memo.Content, memo.ID)
+func updateMemo(db *sql.DB, id int64, req updateMemoRequest) (Memo, error) {
+	result, err := db.Exec("UPDATE memos SET title = ?, content = ? WHERE id = ?", req.Title, req.Content, id)
 	if err != nil {
 		return Memo{}, fmt.Errorf("updateMemo: %v", err)
 	}
@@ -110,13 +115,13 @@ func updateMemo(db *sql.DB, memo Memo) (Memo, error) {
 	}
 	if rows == 0 {
 		// 変更行が0でも「変更前と同じ値で更新されたケース」があり得るので存在確認し、存在しない場合だけエラーを返す
-		if _, err := getMemoByID(db, memo.ID); err == sql.ErrNoRows {
+		if _, err := getMemoByID(db, id); err == sql.ErrNoRows {
 			return Memo{}, sql.ErrNoRows
 		}
 	}
 
 	// getMemoByIDによるDB呼び出しが発生するので、createMemoに倣ってDB呼び出し削減しても良いのだが、現状パフォーマンスはそこまでシビアな要件ではないので可読性を優先
-	updatedMemo, err := getMemoByID(db, memo.ID)
+	updatedMemo, err := getMemoByID(db, id)
 	if err != nil {
 		return Memo{}, fmt.Errorf("updateMemo: %v", err)
 	}
@@ -213,7 +218,7 @@ func (s *Server) createMemoHandler(c *gin.Context) {
 // @Accept       json
 // @Produce      json
 // @Param        id      path   int   true  "Memo ID"
-// @Param        request body   Memo  true  "Updated content"
+// @Param        request body   updateMemoRequest  true  "Updated content"
 // @Success      200     {object}  Memo
 // @Failure      400     {object}  HTTPError  "Invalid input"
 // @Failure      500     {object}  HTTPError  "Server error"
@@ -223,13 +228,12 @@ func (s *Server) updateMemoHandler(c *gin.Context) {
 	if !ok {
 		return
 	}
-	var editedMemo Memo
-	if err := c.BindJSON(&editedMemo); err != nil {
+	var req updateMemoRequest
+	if err := c.BindJSON(&req); err != nil {
 		respondError(c, http.StatusBadRequest, err.Error())
 		return
 	}
-	editedMemo.ID = id
-	editedMemo, err := updateMemo(s.db, editedMemo)
+	editedMemo, err := updateMemo(s.db, id, req)
 	if err != nil {
 		respondError(c, http.StatusInternalServerError, err.Error())
 		return

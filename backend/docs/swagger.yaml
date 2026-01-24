@@ -20,6 +20,13 @@ definitions:
       title:
         type: string
     type: object
+  main.updateMemoRequest:
+    properties:
+      content:
+        type: string
+      title:
+        type: string
+    type: object
 host: localhost:8080
 info:
   contact: {}
@@ -143,7 +150,7 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/main.Memo'
+          $ref: '#/definitions/main.updateMemoRequest'
       produces:
       - application/json
       responses:
