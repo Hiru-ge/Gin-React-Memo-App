@@ -20,6 +20,13 @@ definitions:
       title:
         type: string
     type: object
+  main.createMemoRequest:
+    properties:
+      content:
+        type: string
+      title:
+        type: string
+    type: object
   main.updateMemoRequest:
     properties:
       content:
@@ -61,7 +68,7 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/main.Memo'
+          $ref: '#/definitions/main.createMemoRequest'
       produces:
       - application/json
       responses:

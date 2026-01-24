@@ -59,7 +59,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/main.Memo"
+                            "$ref": "#/definitions/main.createMemoRequest"
                         }
                     }
                 ],
@@ -245,6 +245,17 @@ const docTemplate = `{
                 },
                 "id": {
                     "type": "integer"
+                },
+                "title": {
+                    "type": "string"
+                }
+            }
+        },
+        "main.createMemoRequest": {
+            "type": "object",
+            "properties": {
+                "content": {
+                    "type": "string"
                 },
                 "title": {
                     "type": "string"

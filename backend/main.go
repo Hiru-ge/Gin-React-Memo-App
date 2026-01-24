@@ -28,6 +28,11 @@ type Memo struct {
 	CreatedAt time.Time `json:"created_at"`
 }
 
+type createMemoRequest struct {
+	Title     string    `json:"title"`
+	Content   string    `json:"content"`
+}
+
 type updateMemoRequest struct {
 	Title     string    `json:"title"`
 	Content   string    `json:"content"`
@@ -83,9 +88,9 @@ func getMemoByID(db *sql.DB, id int64) (Memo, error) {
 	return memo, nil
 }
 
-func createMemo(db *sql.DB, memo Memo) (Memo, error) {
+func createMemo(db *sql.DB, req createMemoRequest) (Memo, error) {
 	createdAt := time.Now()
-	result, err := db.Exec("INSERT INTO memos (title, content, created_at) VALUES (?, ?, ?)", memo.Title, memo.Content, createdAt)
+	result, err := db.Exec("INSERT INTO memos (title, content, created_at) VALUES (?, ?, ?)", req.Title, req.Content, createdAt)
 	if err != nil {
 		return Memo{}, fmt.Errorf("createMemo: %v", err)
 	}
@@ -97,8 +102,8 @@ func createMemo(db *sql.DB, memo Memo) (Memo, error) {
 
 	return Memo{
 		ID:        id,
-		Title:     memo.Title,
-		Content:   memo.Content,
+		Title:     req.Title,
+		Content:   req.Content,
 		CreatedAt: createdAt,
 	}, nil
 }
@@ -192,18 +197,18 @@ func (s *Server) getMemoByIDHandler(c *gin.Context) {
 // @Tags         memos
 // @Accept       json
 // @Produce      json
-// @Param        request body   Memo  true  "Memo content"
+// @Param        request body   createMemoRequest  true  "Memo content"
 // @Success      201     {object}  Memo
 // @Failure      400     {object}  HTTPError  "Invalid input"
 // @Failure      500     {object}  HTTPError  "Server error"
 // @Router       /memos [post]
 func (s *Server) createMemoHandler(c *gin.Context) {
-	var newMemo Memo
-	if err := c.BindJSON(&newMemo); err != nil {
+	var req createMemoRequest
+	if err := c.BindJSON(&req); err != nil {
 		respondError(c, http.StatusBadRequest, err.Error())
 		return
 	}
-	newMemo, err := createMemo(s.db, newMemo)
+	newMemo, err := createMemo(s.db, req)
 	if err != nil {
 		respondError(c, http.StatusInternalServerError, err.Error())
 		return

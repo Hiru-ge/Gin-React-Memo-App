@@ -53,7 +53,7 @@
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/main.Memo"
+                            "$ref": "#/definitions/main.createMemoRequest"
                         }
                     }
                 ],
@@ -239,6 +239,17 @@
                 },
                 "id": {
                     "type": "integer"
+                },
+                "title": {
+                    "type": "string"
+                }
+            }
+        },
+        "main.createMemoRequest": {
+            "type": "object",
+            "properties": {
+                "content": {
+                    "type": "string"
                 },
                 "title": {
                     "type": "string"
